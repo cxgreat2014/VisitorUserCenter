@@ -46,23 +46,28 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                 </tr>
                 <?php
                 $str = "";
-                $gifm = new stdClass();
+                $gifm = array();
                 $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
                 $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
                 foreach ($array as $key => $reg) {
                     $gid = $reg->gid;
-                    $gifm->$gid = $reg->gname;
+                    $gifm[$gid] = $reg->gname;
                 }
                 $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_user'], '*');
                 $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user'], $sql);
                 foreach ($array as $key => $reg) {
-                    $json = json_decode($reg->utype);
-                    if ($json->status != "已删除") {
+                    if ($reg->status != "已删除") {
+                        $json = json_decode($reg->type);
                         $str .= '<tr class="color3">';
                         $str .= '<td class="td5 tdCenter">' . $reg->uid . '</td>';
                         $str .= '<td class="td10">' . $reg->name . '</td>';
-                        $gid = $json->type;
-                        $str .= '<td class="td10">' . (empty($gid) ? $gifm->$gid : "自定义") . '</td>';
+                        $str .= '<td class="td10">';
+                        if ($json->type!="group"){
+                            echo '自定义';
+                        }else{
+                            echo $gifm[$reg->gid];
+                        }
+                        $str .= '</td>';
                         $str .= '<td class="td15">' . $reg->email . '</td>';
                         $str .= '<td class="td5 tdCenter">' . $reg->invcode . '</td>';
                         $where = array(array('=', 'uid', $reg->uid));
@@ -70,10 +75,10 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                         $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_history'], 'time', $where, $order, null, null);
                         $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history'], $sql);
                         $str .= '<td class="td20 tdCenter">' . (empty($array) ? "用户尚未登录" : date('Y-m-d H:i:s', $array[0]->time)) . '</td>';
-                        $str .= '<td class="td5 tdCenter">' . $json->status . '</td>';
+                        $str .= '<td class="td5 tdCenter">' . $reg->status . '</td>';
                         $str .= '<td class="td10 tdCenter">
-                            <a href="ModMember.php?Mod&uid=' . $reg->uid . '" class="button"><img src="../../../zb_system/image/admin/page_edit.png" alt="编辑" title="编辑" width="16"></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a onclick="if(confirm(\'您确定要进行删除操作吗？\')){location.href=\'ModMember.php?Del&uid=' . $reg->uid . '\'}" class="button"><img src="../../../zb_system/image/admin/delete.png" alt="删除" title="删除" width="16"></a>
+                            <a href="#" class="button"><img src="../../../zb_system/image/admin/page_edit.png" alt="编辑" title="编辑" width="16"></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="#" class="button"><img src="../../../zb_system/image/admin/delete.png" alt="删除" title="删除" width="16"></a>
                         </td>';
                         $str .= '</tr>';
                     }
@@ -101,18 +106,18 @@ require $blogpath . 'zb_system/admin/admin_top.php';
             var tmp;
             if ($(this).children().attr("alt") == "编辑") {
                 /*$(this).children().attr({"src": "../../../zb_system/image/admin/tick.png", "alt": "保存", "title": "保存"});
-                var child = GroupLine.children();
-                tmp = child.eq(1);
-                tmp.html('<input type="text" style="width: 100px;" value="' + $.trim(tmp.text()) + '"/>');
-                tmp = child.eq(2);
-                TemplateSwitch($.trim(tmp.text()), GroupLine.find(":checkbox"));
+                 var child = GroupLine.children();
+                 tmp = child.eq(1);
+                 tmp.html('<input type="text" style="width: 100px;" value="' + $.trim(tmp.text()) + '"/>');
+                 tmp = child.eq(2);
+                 TemplateSwitch($.trim(tmp.text()), GroupLine.find(":checkbox"));
 
-                tmp.html($('<select class="edit" style="width: 120px;" size="1" id="NewGroupTemplate$Nid">' +
-                    '<option value="所有阅读权限">所有阅读权限</option>' +
-                    '<option value="自定义">自定义</option>' +
-                    '<option value="游客">游客</option>' +
-                    '<option value="禁止访问">禁止访问</option>' +
-                    '</select>').val($.trim(tmp.text())));*/
+                 tmp.html($('<select class="edit" style="width: 120px;" size="1" id="NewGroupTemplate$Nid">' +
+                 '<option value="所有阅读权限">所有阅读权限</option>' +
+                 '<option value="自定义">自定义</option>' +
+                 '<option value="游客">游客</option>' +
+                 '<option value="禁止访问">禁止访问</option>' +
+                 '</select>').val($.trim(tmp.text())));*/
             } else if ($(this).children().attr("alt") == "提交" || $(this).children().attr("alt") == "保存") {
                 tmp = GroupLine.children();
                 if (tmp.eq(1).children().eq(0).val() == "") {
@@ -227,6 +232,7 @@ EOF;
                         }
                     }
                     ?>' +
+                    '<option value="自定义">自定义</option>'+
                 '</select></td>' +
                 '<td class="td15"></td>' +
                 '<td class="tdCenter"><div  style="width: 107px">' +

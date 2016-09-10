@@ -100,7 +100,7 @@ EOF;
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime(),
             nid = 0;
         $("td[colspan='4']").attr("colspan", "6");
-        $("#notice").attr("colspan",$("tr.color1").children().length);
+        $("#notice").attr("colspan", $("tr.color1").children().length);
         $(":checkbox").prop("disabled", true);
 
         $(document).on('click', "a.button", function () {
@@ -158,9 +158,10 @@ EOF;
                                 "src": "../../../zb_system/image/admin/page_edit.png",
                                 "alt": "编辑",
                                 "title": "编辑"
-                            });if(GroupLine.find('[id^="GroupName"]').length>0){
+                            });
+                            if (GroupLine.find('[id^="GroupName"]').length > 0) {
                                 GroupLine.removeAttr("style").fadeIn("slow");
-                            }else {
+                            } else {
                                 GroupLine.removeAttr("style").insertBefore($("tr:last"));
                             }
 
@@ -169,32 +170,34 @@ EOF;
                 });
             } else {
                 if (GroupLine.children().first().text() != "") {
-                    $.ajax({
-                        url: cmdw,
-                        type: "POST",
-                        data: {
-                            action: "DelGroup",
-                            gid: GroupLine.children().first().text()
-                        },
-                        dataType: "json",
-                        success: function (data) {
-                            if (data.status) {
-                                GroupLine.fadeOut("slow", function () {
-                                    eval(data.script);
-                                    GroupLine.remove();
-                                });
-                            } else {
-                                alert("删除失败,详情请见控制台");
-                                console.log(data);
+                    if (confirm('您确定要进行删除操作吗？')) {
+                        $.ajax({
+                            url: cmdw,
+                            type: "POST",
+                            data: {
+                                action: "DelGroup",
+                                gid: GroupLine.children().first().text()
+                            },
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.status) {
+                                    GroupLine.fadeOut("slow", function () {
+                                        eval(data.script);
+                                        GroupLine.remove();
+                                    });
+                                } else {
+                                    alert("删除失败,详情请见控制台");
+                                    console.log(data);
+                                }
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                alert("删除请求失败,详情请见控制台");
+                                console.log(XMLHttpRequest.status);
+                                console.log(XMLHttpRequest.readyState);
+                                console.log(textStatus);
                             }
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            alert("删除请求失败,详情请见控制台");
-                            console.log(XMLHttpRequest.status);
-                            console.log(XMLHttpRequest.readyState);
-                            console.log(textStatus);
-                        }
-                    })
+                        })
+                    }
                 } else {
                     GroupLine.remove();
                 }
@@ -207,7 +210,7 @@ EOF;
                 "top": (ipt.offset().top - ipt.outerHeight() - 24) + "px",
                 "left": ipt.offset().left + "px",
                 "padding-left": "31px",
-                "padding-right":"11px"
+                "padding-right": "11px"
             }).fadeIn("slow");
             setTimeout(function () {
                 $('p#vtip').fadeOut("slow", function () {

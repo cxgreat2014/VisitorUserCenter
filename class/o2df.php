@@ -3,10 +3,12 @@ $table['plugin_oauth2_user'] = '%pre%plugin_oauth2_user';
 $datainfo['plugin_oauth2_user'] = array(
     'uid' => array('uid', 'integer', '', 0),
     'name' => array('name', 'string', 32, ''),
-    'utype' => array('utype', 'string', '', ''), //json格式保存用户类型
-    'pwd' => array('pwd', 'string', 32, ''), //加密保存
+    'pwd' => array('pwd', 'string', 32, ''),
+    'type' => array('type', 'string', '', ''),
+    'gid' => array('gid', 'integer', "", 0),
+    'status' => array('status', 'string', 32, '禁止访问'),
     'email' => array('email', 'string', 128, ''),
-    'invcode' => array('invcode', 'string', 6, ''), //6位随机字符
+    'invcode' => array('invcode', 'string', 6, ''),
     'token' => array('token', 'string', 32, '')
 );
 
@@ -17,7 +19,7 @@ $datainfo['plugin_oauth2_group'] = array(
     'template' => array('template', 'string', 32, '禁止访问'),
     'spy' => array('spy', 'boolean', "", true),
     'oauth' => array('oauth', 'string', '', ''),//json oauthcate
-    'status'=>array('status',"string",32,'禁止访问')
+    'status' => array('status', "string", 32, '禁止访问')
 );
 
 $table['plugin_oauth2_history'] = '%pre%plugin_oauth2_history';

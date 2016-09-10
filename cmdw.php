@@ -109,9 +109,18 @@ CheckParamIsSet("action");
 switch ($_POST['action']) {
     //用户操作类
     case "CreatUser":
-        CheckParamIsSet("name", "type", "invcode");
+        /*
+        'name' => array('name', 'string', 32, ''),
+        'type' => array('type', 'string', '', ''),
+        'gid' => array('gid', 'integer', "", 0),
+        'status'=>array('status','string',32,'禁止访问'),
+        'invcode' => array('invcode', 'string', 6, ''),
+        */
+        CheckParamIsSet("name", "type", "gid", "status", "invcode");
         $name = $_POST['name'];
         $type = $_POST['type'];
+        $gid = $_POST['gid'];
+        $status = $_POST['status'];
         $invcode = $_POST['invcode'];
         if (strlen($name) > 32) {
             SendAlertJS('用户名最长32个字符，请重新输入');
@@ -207,7 +216,7 @@ EOF;
 EOF;
         break;
     case "UpdateGroup":
-        CheckParamIsSet("gid","gname","gtemplate","gspy");
+        CheckParamIsSet("gid", "gname", "gtemplate", "gspy");
         $catelist = new stdClass();
         $catenum = 0;
         $data = new stdClass();
@@ -231,7 +240,7 @@ EOF;
         $zbp->db->Update($sql);
         $json = new stdClass();
         $json->status = true;
-        $json->script =GenerateHintJS("good","用户组已删除");
+        $json->script = GenerateHintJS("good", "用户组已删除");
         $json = json_encode($json);
         echo $json;
         break;
@@ -283,7 +292,7 @@ EOF;
         $zbp->db->Update($sql);
         $json = new stdClass();
         $json->status = true;
-        $json->script =GenerateHintJS("good","用户组已删除");
+        $json->script = GenerateHintJS("good", "用户组已删除");
         $json = json_encode($json);
         echo $json;
         break;
