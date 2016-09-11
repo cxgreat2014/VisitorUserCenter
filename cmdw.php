@@ -18,32 +18,20 @@ function CheckParamIsSet() {
     for ($i = 0; $i < count($args); $i++) {
         if (is_string($args[$i])) {
             if (!isset($_POST[$args[$i]]) || $_POST[$args[$i]] == "") {
-                header('HTTP/1.1 400 Post ' . $args[$i] . ' Error');
-                header('status: 400 Post ' . $args[$i] . ' Error');
-                echo '<b>Post ' . $args[$i] . ' Error</b>';
+                echo '{"status":false,"reason":"Post ' . $args[$i] . ' Error"}';
                 die();
             } elseif (preg_match("/[\'.,:;*?~`!#$%^&+=)(<>{}]|\]|\[|\/|\\\|\"|\|/", $_POST[$args[$i]])) {
-                header('HTTP/1.1 400 Post ' . $args[$i] . ' Error. It Has Special Word');
-                header('status: 400 Post ' . $args[$i] . ' Error. It Has Special Word');
-                echo '<b>Post ' . $args[$i] . ' Error. It Has Special Word</b>';
+                echo '{"status":false,"reason":"Post ' . $args[$i] . ' Error. It Has Special Word"}';
                 die();
             }
         }
     }
-    return $total;
-}
-
-function SendAlertJS($message) {
-    echo 'alert("' . $message . '");';
+    return;
 }
 
 function GenerateHintJS($status, $msg) {
     return '$(\'<div class="hint"><p class="hint hint_' . $status . '">' . (empty($msg) ? "操作成功完成" : $msg) . '</p></div>\')' .
     '.insertBefore($("div#divMain"));$("div.hint:visible").delay(3500).hide(1500,function(){this.remove()});';
-}
-
-function SendGetRadomString() {
-    echo 'getRandomString();';
 }
 
 function CheckUserName($UserName) {
@@ -83,28 +71,7 @@ function ChangeUserStatus($uid, $Status, $Notice) {
     $zbp->db->Update($sql);
     $zbp->SetHint('good', $Notice);
 }
-
-/*
-case"CreatNew":
-    $str = "<style type='text/css'>p {padding: 0.5em 0 0.5em 0;line-height: 1.5em;}</style>";
-    $str .= '<p style="margin-top: 9px;"><span class="title">用户名：&nbsp;</span><input type="text" id="name" />';
-    $str .= '<p><span class="title">用户组：&nbsp;</span><select class="edit" style="width: 179px;" size="1" id="gs">';
-    $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
-    $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
-    foreach ($array as $key => $reg) {
-        $str .= '<option value="' . $reg->gid . '" ' . '>' . $reg->gname . '</option>';
-    }
-    $str .= '</select></p>';
-    $str .= '<p><span class="title">邀请码：&nbsp;</span><input type="text" max="32" min="6" id="invcode"/>';
-    $str .= '<a style="cursor:pointer;"><img style="vertical-align: middle;" src="./image/gencode.png"  alt="一键生成邀请码" title="一键生成邀请码" width="32" onclick="getRandomString(6)"></a></p>';
-
-    $str .= '<p style="margin-left:104px;"><a style="cursor:pointer;"><img style="vertical-align: middle;" src="./image/ok.png"  alt="提交" title="提交" width="48" onclick="js_submit()"></a></p>';
-    echo $str;
-} elseif (!isset($_GET["CreatNew"])) {
-    phpinfo();
-}*/
-
-
+header('Content-type: application/json');
 CheckParamIsSet("action");
 switch ($_POST['action']) {
     //用户操作类
@@ -122,35 +89,61 @@ switch ($_POST['action']) {
         $gid = $_POST['gid'];
         $status = $_POST['status'];
         $invcode = $_POST['invcode'];
+        $json = array();
+        $json['status'] = false;
         if (strlen($name) > 32) {
-            SendAlertJS('用户名最长32个字符，请重新输入');
-            die();
+            $json['reason'][] = array('place' => "name", 'msg' => "用户名最长32个字符，请重新输入\r\n");
         }
         if (!CheckUserName($name)) {
-            SendAlertJS('用户：' . $name . ' 已存在，请重新输入或生成');
-            die();
+            $json['reason'][] = array('place' => "name", 'msg' => '用户：' . $name . " 已存在，请重新输入或生成\r\n");
         }
         if (strlen($invcode) != 6) {
-            SendAlertJS('邀请码长度必须为6，请重新输入或生成');
-            die();
+            $json['reason'][] = array('place' => "invcode", 'msg' => '邀请码长度必须为6，请重新输入或生成');
         }
         if (!CheckInvcode($invcode)) {
-            SendAlertJS('邀请码：' . $invcode . ' 已存在，请重新输入或生成');
-            die();
+            $json['reason'][] = array('place' => "invcode", 'msg' => '邀请码：' . $invcode . ' 已存在，请重新输入或生成');
         }
         $array = new stdClass();
-        $array->type = $type;
-        $array->status = '待激活';
+        if ($type == "自定义") {
+            $array->type = $type;
+            $gid = 0;
+        } else {
+            $array->type = "group";
+            if ($gid == 0) {
+                $json['reason'][] = array('place' => "group", 'msg' => '数据类型错误');
+            }
+        }
+        if (!($status != "正常" || $status != "未激活")) {
+            $json['reason'][] = array('place' => "group", 'msg' => '数据类型错误');
+        }
+        if (!empty($json['reason'])) {
+            $json['action']='vtip';
+            echo json_encode($json);
+            die();
+        }
+        $array->type = json_encode($array);
         $array = json_encode($array);
         $DataArr = array(
             'name' => $name,
-            'utype' => $array,
-            'invcode' => $invcode
+            'type' => $array,
+            'gid' => $gid,
+            'invcode' => $invcode,
+            'status' => $status
         );
         $sql = $zbp->db->sql->Insert($GLOBALS['table']['plugin_oauth2_user'], $DataArr);
         $zbp->db->Insert($sql);
-        SendAlertJS('用户：' . $name . ' 已创建');
-        SendGetRadomString();
+        $where = array(array('=', 'name', $name));
+        $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_user'], 'uid', $where);
+        $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user'], $sql);
+        if (empty($array)) {
+            $json['action']='alert';
+            $json['msg'] = array("debug" => "Can't find $name in database", 'msg' => "在创建用户：$name 时 发生未知错误");
+        } else {
+            $json['status'] = true;
+            $json['action']='hint';
+            $json['hint'] = array('status' => 'good', 'msg' => "用户：$name 已创建");
+        }
+        echo json_encode($json);
         break;
     case "CheckInvcode":
         CheckParamIsSet("invcode");
