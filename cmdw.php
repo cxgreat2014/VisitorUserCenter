@@ -18,10 +18,10 @@ function CheckParamIsSet() {
     for ($i = 0; $i < count($args); $i++) {
         if (is_string($args[$i])) {
             if (!isset($_POST[$args[$i]]) || $_POST[$args[$i]] == "") {
-                echo '{"status":false,"reason":"Post ' . $args[$i] . ' Error"}';
+                echo '{"status":false,"vtip":"Post ' . $args[$i] . ' Error"}';
                 die();
             } elseif (preg_match("/[\'.,:;*?~`!#$%^&+=)(<>{}]|\]|\[|\/|\\\|\"|\|/", $_POST[$args[$i]])) {
-                echo '{"status":false,"reason":"Post ' . $args[$i] . ' Error. It Has Special Word"}';
+                echo '{"status":false,"vtip":"Post ' . $args[$i] . ' Error. It Has Special Word"}';
                 die();
             }
         }
@@ -92,31 +92,28 @@ switch ($_POST['action']) {
         $json = array();
         $json['status'] = false;
         if (strlen($name) > 32) {
-            $json['reason'][] = array('place' => "name", 'msg' => "用户名最长32个字符，请重新输入\r\n");
-        }
-        if (!CheckUserName($name)) {
-            $json['reason'][] = array('place' => "name", 'msg' => '用户：' . $name . " 已存在，请重新输入或生成\r\n");
-        }
-        if (strlen($invcode) != 6) {
-            $json['reason'][] = array('place' => "invcode", 'msg' => '邀请码长度必须为6，请重新输入或生成');
-        }
-        if (!CheckInvcode($invcode)) {
-            $json['reason'][] = array('place' => "invcode", 'msg' => '邀请码：' . $invcode . ' 已存在，请重新输入或生成');
+            $json['vtip'] = array('place' => "name", 'msg' => "用户名最长32个字符，请重新输入\r\n");
+        }elseif (!CheckUserName($name)) {
+            $json['vtip'] = array('place' => "name", 'msg' => '用户：' . $name . " 已存在，请重新输入或生成\r\n");
+        }elseif (strlen($invcode) != 6) {
+            $json['vtip'] = array('place' => "invcode", 'msg' => '邀请码长度必须为6，请重新输入或生成');
+        }elseif (!CheckInvcode($invcode)) {
+            $json['vtip'] = array('place' => "invcode", 'msg' => '邀请码：' . $invcode . ' 已存在，请重新输入或生成');
         }
         $array = new stdClass();
         if ($type == "自定义") {
-            $array->type = $type;
+            $array->type = "自定义";
             $gid = 0;
         } else {
             $array->type = "group";
             if ($gid == 0) {
-                $json['reason'][] = array('place' => "group", 'msg' => '数据类型错误');
+                $json['vtip'] = array('place' => "type", 'msg' => '数据类型错误');
             }
         }
         if (!($status != "正常" || $status != "未激活")) {
-            $json['reason'][] = array('place' => "group", 'msg' => '数据类型错误');
+            $json['vtip'] = array('place' => "status", 'msg' => '数据类型错误');
         }
-        if (!empty($json['reason'])) {
+        if (!empty($json['vtip'])) {
             $json['action']='vtip';
             echo json_encode($json);
             die();
@@ -147,7 +144,7 @@ switch ($_POST['action']) {
         break;
     case "CheckInvcode":
         CheckParamIsSet("invcode");
-        echo CheckInvcode($_POST['invcode']);
+        echo json_encode(array("status"=> CheckInvcode($_POST['invcode'])));
         break;
     case "DelUser":
         CheckParamIsSet("uid");
@@ -243,7 +240,7 @@ EOF;
         $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], 'gname', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
         if (!empty($array)) {
-            echo '{"status":false,"reason":"该群组名称已存在"}';
+            echo '{"status":false,"vtip":"该群组名称已存在"}';
             die();
         }
         $catelist = new stdClass();

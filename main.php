@@ -13,8 +13,8 @@ if (!$zbp->CheckPlugin('oauth2')) {
 }
 
 $blogtitle = 'oauth2 - 用户管理';
-require   '../../../zb_system/admin/admin_header.php';
-require   '../../../zb_system/admin/admin_top.php';
+require '../../../zb_system/admin/admin_header.php';
+require '../../../zb_system/admin/admin_top.php';
 ?>
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle; ?></div>
@@ -74,6 +74,16 @@ require   '../../../zb_system/admin/admin_top.php';
                     }
                 }
                 echo $str;
+
+                $groupselect = "";
+                $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
+                $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
+                foreach ($array as $key => $reg) {
+                    if ($reg->status != "已删除") {
+                        $gid = $reg->gid;
+                        $groupselect .= "<option value=\"$gid\">{$reg->gname}</option>";
+                    }
+                }
                 ?>
                 <tr>
                     <td colspan="7" class="tdCenter"></td>
@@ -87,75 +97,66 @@ require   '../../../zb_system/admin/admin_top.php';
         </div>
     </div>
     <!--<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-3.0.0.min.js"></script>-->
+    <script src="common.js" type="text/javascript"></script>
     <script type="text/javascript">
         AddHeaderIcon("<?php echo $bloghost . 'zb_users/plugin/oauth2/logo.png';?>");
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime();
-        function hintjs(status, msg) {
-            $('<div class="hint"><p class="hint hint_' + status + '">' + (msg == "" ? "操作成功完成" : msg) + '</p></div>').insertBefore($("div#divMain"));
-            $("div.hint:visible").delay(3500).hide(1500, function () {
-                this.remove()
-            });
-        }
+        var newnum,
+            nameinput = '<input type="text" style="width: 100px;" />',
+            groupselect = '<select><?php echo $groupselect;?><option value="自定义">自定义</option></select>',
+            invinput = '<div  style="width: 107px"><input type="text" style="width: 66px;" id="NewUserInvcode" />' +
+                '<a style="cursor: pointer;"><img style="margin-bottom: -11px;margin-right: -10px;" src="./image/gencode.png" ' +
+                'alt="重新生成邀请码" title="重新生成邀请码" onclick="getRandomString(this.parentNode.parentNode.firstChild.id)" width="32" ></div>',
+            statusselect = '<select><option value="待激活">待激活</option><option value="正常">正常</optionval></select>';
+
         $(document).on('click', "a.button", function () {
             var GroupLine = $(this).parent().parent();
-            var tmp;
+            var child = GroupLine.children();
+            var uid = child.eq(0),
+                name = child.eq(1),
+                group = child.eq(2),
+                invcode = child.eq(4),
+                status = child.eq(6);
             if ($(this).children().attr("alt") == "编辑") {
-                /*$(this).children().attr({"src": "../../../zb_system/image/admin/tick.png", "alt": "保存", "title": "保存"});
-                 var child = GroupLine.children();
-                 tmp = child.eq(1);
-                 tmp.html('<input type="text" style="width: 100px;" value="' + $.trim(tmp.text()) + '"/>');
-                 tmp = child.eq(2);
-                 TemplateSwitch($.trim(tmp.text()), GroupLine.find(":checkbox"));
-
-                 tmp.html($('<select class="edit" style="width: 120px;" size="1" id="NewGroupTemplate$Nid">' +
-                 '<option value="所有阅读权限">所有阅读权限</option>' +
-                 '<option value="自定义">自定义</option>' +
-                 '<option value="游客">游客</option>' +
-                 '<option value="禁止访问">禁止访问</option>' +
-                 '</select>').val($.trim(tmp.text())));*/
-            } else if ($(this).children().attr("alt") == "提交") { //|| $(this).children().attr("alt") == "保存") {
-                /*
-                 CheckParamIsSet("name", "type", "gid", "status", "invcode");
-                 $name = $_POST['name'];
-                 $type = $_POST['type'];
-                 $gid = $_POST['gid'];
-                 $status = $_POST['status'];
-                 $invcode = $_POST['invcode'];
-
-                 0 uid
-                 1 name
-                 2 type
-                 4 invcode
-                 6 status
-                 */
-                tmp = GroupLine.children();
+                $(this).children().attr({"src": "../../../zb_system/image/admin/tick.png", "alt": "保存", "title": "保存"});
+                name.html($(nameinput).val($.trim(name.text())));
+                group.html($(groupselect).val($.trim(group.text())));
+                invcode.html($(invinput).children().first().val($.trim(invcode.text())));
+                status.html($(statusselect).val($.trim(status.text())));
+            } else if ($(this).children().attr("alt") == "提交" || $(this).children().attr("alt") == "保存") {
+                var namei = child.eq(1).children().eq(0),
+                    groups = child.eq(2).children().eq(0),
+                    invcodei = child.eq(4).children().children().eq(0),
+                    statuss = child.eq(6).children().eq(0);
                 var json = {};
-                json.name = tmp.eq(1).children().eq(0).val();
+                json.name = namei.val();
                 if (json.name == "") {
-                    ShowTip(tmp.eq(1).children().eq(0));
+                    vtip(namei);
                     return;
                 }
-                json.invcode = tmp.eq(4).children().eq(0).val();
+                json.invcode = invcodei.val();
+                console.log(invcodei.val());
                 if (json.invcode == "") {
-                    ShowTip(tmp.eq(4).children().eq(0));
+                    vtip(invcodei);
                     return;
                 }
 
-                if (tmp.eq(0).text() == "") {
+                if (uid.text() == "") {
                     json.action = "CreatUser";
                 } else {
                     json.action = "UpdateUser";
-                    json.uid = tmp.eq(0).text();
+                    json.uid = uid.text();
                 }
 
-                if (tmp.eq(2).children().eq(0).val() == "自定义") {
+                if (groups.val() == "自定义") {
                     json.type = "自定义";
                     json.gid = 0;
                 } else {
                     json.type = "group";
-                    json.gid = tmp.eq(2).children().eq(0).val();
+                    json.gid = groups.val();
                 }
-                json.status = tmp.eq(6).children().eq(0).val();
+                json.status = statuss.val();
+                json.action="CreatUser";
                 $.ajax({
                     url: cmdw,
                     type: "POST",
@@ -163,14 +164,28 @@ require   '../../../zb_system/admin/admin_top.php';
                     dataType: "json",
                     success: function (data) {
                         if (!data.status) {
-                            alert(data.reason);
+                            switch (data.action) {
+                                case "hint":
+                                    hint(json.hint[0].status, json.hint[0].msg);
+                                    break;
+                                case "vtip":
+                                    vtip(eval(json.vtip[0].place), json.vtip[0].msg);
+                                    break;
+                                case "alert":
+                                    alert(json.msg.msg);
+                                    break;
+                                default:
+                                    alert("程序出错啦!详见控制台");
+                                    console.log(json);
+                            }
                             return;
                         }
                         GroupLine.fadeOut("slow", function () {
-                            tmp.eq(0).html(data.uid);
-                            tmp.eq(1).html(tmp.eq(1).children().eq(0).val());
-                            tmp.eq(2).html(tmp.eq(2).children().eq(0).val());
-                            GroupLine.find(":checkbox").prop("disabled", true);
+                            uid.html(data.uid);
+                            name.html(namei.val());
+                            group.html(groups.val());
+                            invcode.html(invcodei.val());
+                            status.html(statuss.val());
                             GroupLine.find('img[alt="提交"],img[alt="保存"]').attr({
                                 "src": "../../../zb_system/image/admin/page_edit.png",
                                 "alt": "编辑",
@@ -181,7 +196,6 @@ require   '../../../zb_system/admin/admin_top.php';
                             } else {
                                 GroupLine.removeAttr("style").insertBefore($("tr:last"));
                             }
-
                         });
                     }
                 });
@@ -191,14 +205,14 @@ require   '../../../zb_system/admin/admin_top.php';
                         url: cmdw,
                         type: "POST",
                         data: {
-                            action: "DelGroup",
-                            gid: GroupLine.children().first().text()
+                            action: "DelUser",
+                            uid: uid.text()
                         },
                         dataType: "json",
                         success: function (data) {
                             if (data.status) {
                                 GroupLine.fadeOut("slow", function () {
-                                    eval(data.script);
+                                    hint(data.hint.status,data.hint.msg);
                                     GroupLine.remove();
                                 });
                             } else {
@@ -219,47 +233,17 @@ require   '../../../zb_system/admin/admin_top.php';
             }
         });
 
-        function ShowTip(ipt) {
-            $('body').append('<p id="vtip"><img id="vtipArrow" src="./image/vtip_arrow.png"/><img src="./image/inform.png" style="position: absolute;top: 12px;left: 8px;">' + "该字段您还未填写哟~" + '</p>');
-            $('p#vtip').css({
-                "top": (ipt.offset().top - ipt.outerHeight() - 24) + "px",
-                "left": ipt.offset().left + "px",
-                "padding-left": "31px",
-                "padding-right": "11px"
-            }).fadeIn("slow");
-            setTimeout(function () {
-                $('p#vtip').fadeOut("slow", function () {
-                    $('p#vtip').remove();
-                });
-            }, 6000);
-        }
-
         function addNewUser() {
+            newnum++;
             $('tr:last').before('<tr class="color3">' +
                 '<td class="td5 tdCenter">&nbsp;</td>' +
-                '<td class="td10"><input type="text" id="NewUserName"></td>' +
-                '<td class="td10"><select>' +
-                '<?php
-                    $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
-                    $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
-                    foreach ($array as $key => $reg) {
-                        if ($reg->status != "已删除") {
-                            $gid = $reg->gid;
-                            echo <<<EOF
-<option value="$gid">{$reg->gname}</option>
-EOF;
-                        }
-                    }
-                    ?>' +
-                '<option value="自定义">自定义</option>' +
-                '</select></td>' +
+                '<td class="td10">' + nameinput + '</td>' +
+                '<td class="td10">' + groupselect + '</td>' +
                 '<td class="td15"></td>' +
-                '<td class="tdCenter"><div  style="width: 107px">' +
-                '<input type="text" style="width: 66px;" id="NewUserInvcode" />' +
-                '<a style="cursor: pointer;"><img style="margin-bottom: -11px;margin-right: -10px;" src="./image/gencode.png" alt="重新生成邀请码" title="重新生成邀请码" onclick="getRandomString(this.parentNode.parentNode.firstChild.id)" width="32" >' +
-                '</div></td>' +
+                '<td class="tdCenter">' +
+                invinput + '</td>' +
                 '<td class="td20 tdCenter"></td>' +
-                '<td class="td5 tdCenter"><select><option value="待激活">待激活</option><option value="正常">正常</optionval></select></td>' +
+                '<td class="td5 tdCenter">' + statusselect +
                 '<td class="td10 tdCenter">' +
                 '<a href="#" class="button"><img src = "../../../zb_system/image/admin/tick.png" alt = "提交" title = "提交" width = "16" ></a>&nbsp;&nbsp;&nbsp;' +
                 '<a href="#" class="button"><img src = "../../../zb_system/image/admin/delete.png" alt = "删除" title = "删除" width = "16" ></a> </td></tr >');
@@ -284,9 +268,9 @@ EOF;
                     action: "CheckInvcode",
                     invcode: Invcode
                 },
-                dataType: "text",
+                dataType: "json",
                 success: function (data) {
-                    if (data == "1") {
+                    if (data.status) {
                         document.getElementById(id).value = Invcode;
                         return true;
                     } else {
