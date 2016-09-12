@@ -64,13 +64,13 @@ document.onkeydown = function(e){
 $("body").html("<div style=\"position:fixed;top:0;left:0;width:100%;height:100%;text-align:center;background:#fff;padding-top:150px;z-index:99999;\">'.$zbp->Config('oauth2')->closetips.'</div>");');
 
     fclose($SiteCtrljs);
-//***************************************ReNewSiteCtrlJSFile Stop*******************************************************************
 }
+//***************************************ReNewSiteCtrlJSFile Stop*******************************************************************
 ?>
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle;?></div>
         <div class="SubMenu">
-            <?php require dirname(__FILE__).'/class/ToolBar_top.php';?>
+            <?php require dirname(__FILE__) . '/header.php';?>
             <!--<a href="main.php" ><span class="m-left">用户授权</span></a>
             <a href="SiteCtrl.php"><span class="m-left">防盗设置</span></a>
             <a href="history.php"><span class="m-left">记录查询</span></a>

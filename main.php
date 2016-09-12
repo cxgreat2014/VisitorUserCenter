@@ -13,25 +13,15 @@ if (!$zbp->CheckPlugin('oauth2')) {
 }
 
 $blogtitle = 'oauth2 - 用户管理';
-require $blogpath . 'zb_system/admin/admin_header.php';
-require $blogpath . 'zb_system/admin/admin_top.php';
+require   '../../../zb_system/admin/admin_header.php';
+require   '../../../zb_system/admin/admin_top.php';
 ?>
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle; ?></div>
         <div class="SubMenu">
-            <?php require dirname(__FILE__) . '/class/ToolBar_top.php'; ?>
+            <?php require dirname(__FILE__) . '/header.php'; ?>
         </div>
         <div id="divMain2">
-            <style type="text/css">
-                .lbt {
-                    padding: 8px 4px;
-                    cursor: pointer;
-                    border: none;
-                    background: #E1E1E1;
-                    margin: 3px 3px 3px 7px;
-                }
-
-            </style>
             <table border="1" class="tableFull tableBorder tableBorder-thcenter">
                 <tbody>
                 <tr class="color1">
@@ -62,9 +52,9 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                         $str .= '<td class="td5 tdCenter">' . $reg->uid . '</td>';
                         $str .= '<td class="td10">' . $reg->name . '</td>';
                         $str .= '<td class="td10">';
-                        if ($json->type!="group"){
+                        if ($json->type != "group") {
                             echo '自定义';
-                        }else{
+                        } else {
                             echo $gifm[$reg->gid];
                         }
                         $str .= '</td>';
@@ -88,7 +78,7 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                 <tr>
                     <td colspan="7" class="tdCenter"></td>
                     <td class="tdCenter">
-                        <button class="lbt" type="button" onclick="addnewuser()">
+                        <button class="lbt" type="button" onclick="addNewUser()">
                             新建用户
                         </button>
                     </td>
@@ -100,7 +90,12 @@ require $blogpath . 'zb_system/admin/admin_top.php';
     <script type="text/javascript">
         AddHeaderIcon("<?php echo $bloghost . 'zb_users/plugin/oauth2/logo.png';?>");
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime();
-
+        function hintjs(status, msg) {
+            $('<div class="hint"><p class="hint hint_' + status + '">' + (msg == "" ? "操作成功完成" : msg) + '</p></div>').insertBefore($("div#divMain"));
+            $("div.hint:visible").delay(3500).hide(1500, function () {
+                this.remove()
+            });
+        }
         $(document).on('click', "a.button", function () {
             var GroupLine = $(this).parent().parent();
             var tmp;
@@ -118,25 +113,49 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                  '<option value="游客">游客</option>' +
                  '<option value="禁止访问">禁止访问</option>' +
                  '</select>').val($.trim(tmp.text())));*/
-            } else if ($(this).children().attr("alt") == "提交" || $(this).children().attr("alt") == "保存") {
+            } else if ($(this).children().attr("alt") == "提交") { //|| $(this).children().attr("alt") == "保存") {
+                /*
+                 CheckParamIsSet("name", "type", "gid", "status", "invcode");
+                 $name = $_POST['name'];
+                 $type = $_POST['type'];
+                 $gid = $_POST['gid'];
+                 $status = $_POST['status'];
+                 $invcode = $_POST['invcode'];
+
+                 0 uid
+                 1 name
+                 2 type
+                 4 invcode
+                 6 status
+                 */
                 tmp = GroupLine.children();
-                if (tmp.eq(1).children().eq(0).val() == "") {
+                var json = {};
+                json.name = tmp.eq(1).children().eq(0).val();
+                if (json.name == "") {
                     ShowTip(tmp.eq(1).children().eq(0));
                     return;
                 }
-                var json = {};
+                json.invcode = tmp.eq(4).children().eq(0).val();
+                if (json.invcode == "") {
+                    ShowTip(tmp.eq(4).children().eq(0));
+                    return;
+                }
+
                 if (tmp.eq(0).text() == "") {
                     json.action = "CreatUser";
                 } else {
                     json.action = "UpdateUser";
-                    json.gid = tmp.eq(0).text();
+                    json.uid = tmp.eq(0).text();
                 }
-                json.gname = tmp.eq(1).children().eq(0).val();
-                json.gtemplate = tmp.eq(2).children().eq(0).val();
-                json.gspy = tmp.eq(3).children().eq(0).prop("checked");
-                for (var i = 4; i < (tmp.length - 1); i++) {
-                    json["cl" + (i - 3)] = tmp.eq(i).children().eq(0).prop("checked");
+
+                if (tmp.eq(2).children().eq(0).val() == "自定义") {
+                    json.type = "自定义";
+                    json.gid = 0;
+                } else {
+                    json.type = "group";
+                    json.gid = tmp.eq(2).children().eq(0).val();
                 }
+                json.status = tmp.eq(6).children().eq(0).val();
                 $.ajax({
                     url: cmdw,
                     type: "POST",
@@ -148,7 +167,7 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                             return;
                         }
                         GroupLine.fadeOut("slow", function () {
-                            tmp.eq(0).html(data.gid);
+                            tmp.eq(0).html(data.uid);
                             tmp.eq(1).html(tmp.eq(1).children().eq(0).val());
                             tmp.eq(2).html(tmp.eq(2).children().eq(0).val());
                             GroupLine.find(":checkbox").prop("disabled", true);
@@ -187,7 +206,7 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                                 console.log(data);
                             }
                         },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        error: function (XMLHttpRequest, textStatus) {
                             alert("删除请求失败,详情请见控制台");
                             console.log(XMLHttpRequest.status);
                             console.log(XMLHttpRequest.readyState);
@@ -232,7 +251,7 @@ EOF;
                         }
                     }
                     ?>' +
-                    '<option value="自定义">自定义</option>'+
+                '<option value="自定义">自定义</option>' +
                 '</select></td>' +
                 '<td class="td15"></td>' +
                 '<td class="tdCenter"><div  style="width: 107px">' +

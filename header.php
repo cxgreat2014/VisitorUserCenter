@@ -57,5 +57,13 @@ echo <<<EOF
     select {
         width: 120px;
     }
+
+    .lbt {
+        padding: 8px 4px;
+        cursor: pointer;
+        border: none;
+        background: #E1E1E1;
+        margin: 3px 3px 3px 7px;
+    }
 </style>
 EOF;

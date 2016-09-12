@@ -13,7 +13,7 @@ require $blogpath . 'zb_system/admin/admin_top.php';
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle;?></div>
         <div class="SubMenu">
-            <?php require dirname(__FILE__).'/class/ToolBar_top.php';?>
+            <?php require dirname(__FILE__) . '/header.php';?>
         </div>
         <div id="divMain2">
             <table border="1" class="tableFull tableBorder tableBorder-thcenter"><tbody>

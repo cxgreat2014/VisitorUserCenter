@@ -17,7 +17,7 @@ require $blogpath . 'zb_system/admin/admin_top.php';
 ?>
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle; ?></div>
-        <?php require dirname(__FILE__) . '/class/ToolBar_top.php'; ?>
+        <?php require dirname(__FILE__) . '/header.php'; ?>
         <div id="divMain2">
             <table border="1" class="tableFull tableBorder tableBorder-thcenter">
                 <tbody>
@@ -87,8 +87,7 @@ EOF;
                 <tr>
                     <td colspan="4"></td>
                     <td class="tdCenter">
-                        <button class="color1" type="button"
-                                style="padding:8px 4px;cursor: pointer;border: none;background:#E1E1E1;margin: 3px 3px 3px 7px;">
+                        <button class="color1 lbt" type="button">
                             新建用户组
                         </button>
                     </td>
