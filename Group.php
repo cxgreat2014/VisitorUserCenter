@@ -121,8 +121,9 @@ EOF;
                     '</select>').val($.trim(tmp.text())));
             } else if ($(this).children().attr("alt") == "提交" || $(this).children().attr("alt") == "保存") {
                 tmp = GroupLine.children();
-                if (tmp.eq(1).children().eq(0).val() == "") {
-                    ShowTip(tmp.eq(1).children().eq(0));
+                var gname=tmp.eq(1).children().eq(0);
+                if (gname.val() == "") {
+                    vtip(gname);
                     return;
                 }
                 var json = {};
@@ -132,7 +133,7 @@ EOF;
                     json.action = "UpdateGroup";
                     json.gid = tmp.eq(0).text();
                 }
-                json.gname = tmp.eq(1).children().eq(0).val();
+                json.gname = gname.val();
                 json.gtemplate = tmp.eq(2).children().eq(0).val();
                 json.gspy = tmp.eq(3).children().eq(0).prop("checked");
                 for (var i = 4; i < (tmp.length - 1); i++) {
@@ -144,13 +145,13 @@ EOF;
                     data: json,
                     dataType: "json",
                     success: function (data) {
+                        showMsg(data);
                         if (!data.status) {
-                            alert(data.reason);
                             return;
                         }
                         GroupLine.fadeOut("slow", function () {
                             tmp.eq(0).html(data.gid);
-                            tmp.eq(1).html(tmp.eq(1).children().eq(0).val());
+                            tmp.eq(1).html(gname.val());
                             tmp.eq(2).html(tmp.eq(2).children().eq(0).val());
                             GroupLine.find(":checkbox").prop("disabled", true);
                             GroupLine.find('img[alt="提交"],img[alt="保存"]').attr({
@@ -203,20 +204,6 @@ EOF;
             }
         })
         ;
-        function ShowTip(ipt) {
-            $('body').append('<p id="vtip"><img id="vtipArrow" src="./image/vtip_arrow.png"/><img src="./image/inform.png" style="position: absolute;top: 12px;left: 8px;">' + "该字段您还未填写哟~" + '</p>');
-            $('p#vtip').css({
-                "top": (ipt.offset().top - ipt.outerHeight() - 24) + "px",
-                "left": ipt.offset().left + "px",
-                "padding-left": "31px",
-                "padding-right": "11px"
-            }).fadeIn("slow");
-            setTimeout(function () {
-                $('p#vtip').fadeOut("slow", function () {
-                    $('p#vtip').remove();
-                });
-            }, 6000);
-        }
 
         $("button.color1").last().click(function () {
             nid++;
@@ -228,7 +215,7 @@ EOF;
                     Nid: nid
                 },
                 success: function (data) {
-                    $("tr:last").before(data);
+                    $("tr:last").before(data.html);
                 }
             });
         });

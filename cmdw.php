@@ -12,7 +12,8 @@ if (!$zbp->CheckPlugin('oauth2')) {
     die();
 }
 
-function CheckParamIsSet() {
+function CheckParamIsSet()
+{
     $total = 0;
     $args = func_get_args();
     for ($i = 0; $i < count($args); $i++) {
@@ -29,12 +30,14 @@ function CheckParamIsSet() {
     return;
 }
 
-function GenerateHintJS($status, $msg) {
+function GenerateHintJS($status, $msg)
+{
     return '$(\'<div class="hint"><p class="hint hint_' . $status . '">' . (empty($msg) ? "操作成功完成" : $msg) . '</p></div>\')' .
     '.insertBefore($("div#divMain"));$("div.hint:visible").delay(3500).hide(1500,function(){this.remove()});';
 }
 
-function CheckUserName($UserName) {
+function CheckUserName($UserName)
+{
     //true=OK,false=denied
     global $zbp;
     $where = array(array('=', 'name', $UserName));
@@ -43,7 +46,8 @@ function CheckUserName($UserName) {
     return empty($array);
 }
 
-function CheckInvcode($Invcode) {
+function CheckInvcode($Invcode)
+{
     //true=OK,false=denied
     global $zbp;
     $where = array(array('=', 'invcode', $Invcode));
@@ -53,36 +57,26 @@ function CheckInvcode($Invcode) {
 }
 
 
-function ChangeUserStatus($uid, $Status, $Notice) {
+function ChangeUserStatus($uid, $Status, $Notice)
+{
     if (!isset($uid) || $uid === "") {
         throw new Exception("No Uid Set!", 1);
-    } elseif (!isset($Status) || $Status === "") {
+    } elseif (empty($Status)) {
         throw new Exception("No Status Set!", 1);
     }
     global $zbp;
-    $where = array(array('=', 'uid', $uid));
-    $sql = $zbp->db->sql->Select('%pre%plugin_oauth2_user', 'utype', $where, null, null, null);
-    $array = reset($zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user'], $sql));
-    $array = json_decode($array->utype);
-    $array->status = $Status;
-    $array = array('utype' => json_encode($array));
+    $array = array('status' => $Status);
     $where = array(array('=', 'uid', $uid));
     $sql = $zbp->db->sql->Update($GLOBALS['table']['plugin_oauth2_user'], $array, $where);
     $zbp->db->Update($sql);
-    $zbp->SetHint('good', $Notice);
+    echo json_encode(array("status"=>true,'action'=>"hint",'hint'=>array("status"=>"good","msg"=>$Notice)));
 }
-header('Content-type: application/json');
+
+//header('Content-type: application/json');
 CheckParamIsSet("action");
 switch ($_POST['action']) {
     //用户操作类
     case "CreatUser":
-        /*
-        'name' => array('name', 'string', 32, ''),
-        'type' => array('type', 'string', '', ''),
-        'gid' => array('gid', 'integer', "", 0),
-        'status'=>array('status','string',32,'禁止访问'),
-        'invcode' => array('invcode', 'string', 6, ''),
-        */
         CheckParamIsSet("name", "type", "gid", "status", "invcode");
         $name = $_POST['name'];
         $type = $_POST['type'];
@@ -93,11 +87,11 @@ switch ($_POST['action']) {
         $json['status'] = false;
         if (strlen($name) > 32) {
             $json['vtip'] = array('place' => "name", 'msg' => "用户名最长32个字符，请重新输入\r\n");
-        }elseif (!CheckUserName($name)) {
+        } elseif (!CheckUserName($name)) {
             $json['vtip'] = array('place' => "name", 'msg' => '用户：' . $name . " 已存在，请重新输入或生成\r\n");
-        }elseif (strlen($invcode) != 6) {
+        } elseif (strlen($invcode) != 6) {
             $json['vtip'] = array('place' => "invcode", 'msg' => '邀请码长度必须为6，请重新输入或生成');
-        }elseif (!CheckInvcode($invcode)) {
+        } elseif (!CheckInvcode($invcode)) {
             $json['vtip'] = array('place' => "invcode", 'msg' => '邀请码：' . $invcode . ' 已存在，请重新输入或生成');
         }
         $array = new stdClass();
@@ -114,7 +108,7 @@ switch ($_POST['action']) {
             $json['vtip'] = array('place' => "status", 'msg' => '数据类型错误');
         }
         if (!empty($json['vtip'])) {
-            $json['action']='vtip';
+            $json['action'] = 'vtip';
             echo json_encode($json);
             die();
         }
@@ -133,28 +127,27 @@ switch ($_POST['action']) {
         $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_user'], 'uid', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user'], $sql);
         if (empty($array)) {
-            $json['action']='alert';
+            $json['action'] = 'alert';
             $json['msg'] = array("debug" => "Can't find $name in database", 'msg' => "在创建用户：$name 时 发生未知错误");
         } else {
+            $json['uid'] = $array[0]->uid;
             $json['status'] = true;
-            $json['action']='hint';
+            $json['action'] = 'hint';
             $json['hint'] = array('status' => 'good', 'msg' => "用户：$name 已创建");
         }
         echo json_encode($json);
         break;
     case "CheckInvcode":
         CheckParamIsSet("invcode");
-        echo json_encode(array("status"=> CheckInvcode($_POST['invcode'])));
+        echo json_encode(array("status" => CheckInvcode($_POST['invcode'])));
         break;
     case "DelUser":
         CheckParamIsSet("uid");
         ChangeUserStatus($_POST["uid"], "已删除", "该用户已删除");
-        Redirect('./main.php');
         break;
     case 'RecUser':
         CheckParamIsSet("uid");
         ChangeUserStatus($_POST["uid"], "正常", "该用户已恢复");
-        Redirect('./main.php');
         break;
     case "DenUser":
         CheckParamIsSet("uid");
@@ -164,7 +157,8 @@ switch ($_POST['action']) {
     case "NewGroup":
         CheckParamIsSet('Nid');
         $Nid = $_POST['Nid'];
-        echo <<<EOF
+        $str = "";
+        $str .= <<<EOF
 <tr class="color2">
 <td class="td5 tdCenter"></td>
 <td class="td5">
@@ -192,18 +186,19 @@ EOF;
         for ($num = 1; $num <= $catenum; $num++) {
             $cid = $catelist->$num;
             $ids = 'NewGroupCate' . $Nid . 'CateNum' . $num;
-            echo <<<EOF
+            $str .= <<<EOF
 <td class="td15 tdCenter">
 <input type="checkbox" id="$ids"/>
 <label for="$ids">禁止</label></td>
 EOF;
         }
-        echo <<<EOF
+        $str .= <<<EOF
 <td class="td10 tdCenter">
 <a href="#" class="button"><img src = "../../../zb_system/image/admin/tick.png" alt = "提交" title = "提交" width = "16" ></a>&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="#" class="button"><img src = "../../../zb_system/image/admin/delete.png" alt = "删除" title = "删除" width = "16" ></a>
 </td></tr >
 EOF;
+        echo json_encode(array("html" => $str));
         break;
     case "UpdateGroup":
         CheckParamIsSet("gid", "gname", "gtemplate", "gspy");
@@ -230,7 +225,8 @@ EOF;
         $zbp->db->Update($sql);
         $json = new stdClass();
         $json->status = true;
-        $json->script = GenerateHintJS("good", "用户组已删除");
+        $json->action="hint";
+        $json->hint=array("status"=>"good","msg"=> "用户组已删除");
         $json = json_encode($json);
         echo $json;
         break;
@@ -240,7 +236,7 @@ EOF;
         $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], 'gname', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
         if (!empty($array)) {
-            echo '{"status":false,"vtip":"该群组名称已存在"}';
+            echo json_encode(array("status"=>false,"action"=>"vtip","vtip"=>array("place"=>"gname","msg"=>"该群组名称已存在")));
             die();
         }
         $catelist = new stdClass();

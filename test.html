@@ -1,0 +1,15 @@
+<script>
+    $.ajax({
+        url: cmdw,
+        type: "POST",
+        data: json,
+        dataType: "json",
+        success: function (data) {
+            data = eval(data);
+            if (!data.status) {
+               alert(data.msg.msg);
+                return;
+            }
+        }
+    })
+</script>

@@ -53,9 +53,9 @@ require '../../../zb_system/admin/admin_top.php';
                         $str .= '<td class="td10">' . $reg->name . '</td>';
                         $str .= '<td class="td10">';
                         if ($json->type != "group") {
-                            echo '自定义';
+                            $str .= '自定义';
                         } else {
-                            echo $gifm[$reg->gid];
+                            $str .= $gifm[$reg->gid];
                         }
                         $str .= '</td>';
                         $str .= '<td class="td15">' . $reg->email . '</td>';
@@ -104,10 +104,13 @@ require '../../../zb_system/admin/admin_top.php';
         var newnum,
             nameinput = '<input type="text" style="width: 100px;" />',
             groupselect = '<select><?php echo $groupselect;?><option value="自定义">自定义</option></select>',
-            invinput = '<div  style="width: 107px"><input type="text" style="width: 66px;" id="NewUserInvcode" />' +
+            invinput = '<div  style="width: 107px"><input type="text" style="width: 66px;"/>' +
                 '<a style="cursor: pointer;"><img style="margin-bottom: -11px;margin-right: -10px;" src="./image/gencode.png" ' +
-                'alt="重新生成邀请码" title="重新生成邀请码" onclick="getRandomString(this.parentNode.parentNode.firstChild.id)" width="32" ></div>',
+                'alt="重新生成邀请码" title="重新生成邀请码" width="32" ></div>',
             statusselect = '<select><option value="待激活">待激活</option><option value="正常">正常</optionval></select>';
+        $(document).on('click', "a>img[alt='重新生成邀请码']", function () {
+            getRandomString($(this).parent().parent().children().first());
+        });
 
         $(document).on('click', "a.button", function () {
             var GroupLine = $(this).parent().parent();
@@ -135,7 +138,6 @@ require '../../../zb_system/admin/admin_top.php';
                     return;
                 }
                 json.invcode = invcodei.val();
-                console.log(invcodei.val());
                 if (json.invcode == "") {
                     vtip(invcodei);
                     return;
@@ -156,28 +158,16 @@ require '../../../zb_system/admin/admin_top.php';
                     json.gid = groups.val();
                 }
                 json.status = statuss.val();
-                json.action="CreatUser";
+                json.action = "CreatUser";
                 $.ajax({
                     url: cmdw,
                     type: "POST",
                     data: json,
                     dataType: "json",
                     success: function (data) {
+                        console.log(data);
+                        showMsg(data);
                         if (!data.status) {
-                            switch (data.action) {
-                                case "hint":
-                                    hint(json.hint[0].status, json.hint[0].msg);
-                                    break;
-                                case "vtip":
-                                    vtip(eval(json.vtip[0].place), json.vtip[0].msg);
-                                    break;
-                                case "alert":
-                                    alert(json.msg.msg);
-                                    break;
-                                default:
-                                    alert("程序出错啦!详见控制台");
-                                    console.log(json);
-                            }
                             return;
                         }
                         GroupLine.fadeOut("slow", function () {
@@ -210,9 +200,9 @@ require '../../../zb_system/admin/admin_top.php';
                         },
                         dataType: "json",
                         success: function (data) {
+                            showMsg(data);
                             if (data.status) {
                                 GroupLine.fadeOut("slow", function () {
-                                    hint(data.hint.status,data.hint.msg);
                                     GroupLine.remove();
                                 });
                             } else {
@@ -234,8 +224,7 @@ require '../../../zb_system/admin/admin_top.php';
         });
 
         function addNewUser() {
-            newnum++;
-            $('tr:last').before('<tr class="color3">' +
+            var jnode = $('<tr class="color3">' +
                 '<td class="td5 tdCenter">&nbsp;</td>' +
                 '<td class="td10">' + nameinput + '</td>' +
                 '<td class="td10">' + groupselect + '</td>' +
@@ -247,14 +236,16 @@ require '../../../zb_system/admin/admin_top.php';
                 '<td class="td10 tdCenter">' +
                 '<a href="#" class="button"><img src = "../../../zb_system/image/admin/tick.png" alt = "提交" title = "提交" width = "16" ></a>&nbsp;&nbsp;&nbsp;' +
                 '<a href="#" class="button"><img src = "../../../zb_system/image/admin/delete.png" alt = "删除" title = "删除" width = "16" ></a> </td></tr >');
+            getRandomString(jnode.children().eq(4).children().children().eq(0));
+            newnum = jnode;
+            $('tr:last').before(jnode);
             if (newnum > 1) {
                 $("[colspan='7']").html('<button class="lbt" type="button"> 提交全部 </button>');
             }
-            getRandomString('NewUserInvcode' + newnum.toString());
         }
 
 
-        function getRandomString(id) {
+        function getRandomString(ipt) {
             var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'; // 默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1
             var maxPos = $chars.length;
             var Invcode = '';
@@ -263,7 +254,7 @@ require '../../../zb_system/admin/admin_top.php';
             }
             $.ajax({
                 type: "POST",
-                url: "./cmdw.php",
+                url: cmdw,
                 data: {
                     action: "CheckInvcode",
                     invcode: Invcode
@@ -271,10 +262,9 @@ require '../../../zb_system/admin/admin_top.php';
                 dataType: "json",
                 success: function (data) {
                     if (data.status) {
-                        document.getElementById(id).value = Invcode;
-                        return true;
+                        $(ipt).val(Invcode);
                     } else {
-                        getRandomString(id);
+                        getRandomString(ipt);
                     }
                 }
             });

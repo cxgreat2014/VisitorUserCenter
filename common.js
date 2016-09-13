@@ -1,5 +1,22 @@
+function showMsg(data) {
+    switch (data.action) {
+        case "hint":
+            hint(data.hint.status, data.hint.msg);
+            break;
+        case "vtip":
+            vtip(eval("(" + data.vtip.place + ")"), data.vtip.msg);
+            break;
+        case "alert":
+            alert(data.msg.msg);
+            break;
+        default:
+            alert("程序出错啦!详见控制台");
+            console.log(json);
+    }
+}
+
 function hint(status, msg) {
-    $('<div class="hint"><p class="hint hint_' + status + '">' + (msg == "" ? "操作成功完成" : msg) + '</p></div>').insertBefore($("div#divMain")).delay(3500).hide(1500, function () {
+    $('<div class="hint"><p class="hint hint_' + status + '">' + (typeof(msg) == "undefined" || msg == "" ? "操作成功完成" : msg) + '</p></div>').insertBefore($("div#divMain")).delay(3500).hide(1500, function () {
         this.remove()
     });
 }
