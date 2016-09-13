@@ -1,5 +1,5 @@
 <?php
-echo <<<EOF
+echo '
 <div class="SubMenu">
     <a href="main.php"><span class="m-left">用户管理</span></a>
     <a href="Group.php"><span class="m-left">分组授权</span></a>
@@ -15,8 +15,12 @@ echo <<<EOF
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 8px rgba(82, 168, 236, 0.6);
     }
 
-    tr:not(:first-child,:last-child):hover {
+    tr:not(:first-child):hover {
         background: #ffffdd;
+    }
+
+    tr:last-child:hover {
+        background: inherit;
     }
 
     label {
@@ -66,4 +70,4 @@ echo <<<EOF
         margin: 3px 3px 3px 7px;
     }
 </style>
-EOF;
+';
