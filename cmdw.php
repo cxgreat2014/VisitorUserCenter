@@ -1,6 +1,7 @@
 <?php
 require '../../../zb_system/function/c_system_base.php';
 require '../../../zb_system/function/c_system_admin.php';
+require './dbop.php';
 $zbp->Load();
 $action = 'root';
 if (!$zbp->CheckRights($action)) {
@@ -11,7 +12,7 @@ if (!$zbp->CheckPlugin('oauth2')) {
     $zbp->ShowError(48);
     die();
 }
-
+$oauth2 = new Oauth2();
 function CheckParamIsSet()
 {
     $total = 0;
@@ -39,10 +40,8 @@ function GenerateHintJS($status, $msg)
 function CheckUserName($UserName)
 {
     //true=OK,false=denied
-    global $zbp;
-    $where = array(array('=', 'name', $UserName));
-    $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_user'], '*', $where);
-    $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user'], $sql);
+    global $oauth2;
+    $array = $oauth2->GetUserByName($UserName);
     return empty($array);
 }
 
@@ -69,7 +68,7 @@ function ChangeUserStatus($uid, $Status, $Notice)
     $where = array(array('=', 'uid', $uid));
     $sql = $zbp->db->sql->Update($GLOBALS['table']['plugin_oauth2_user'], $array, $where);
     $zbp->db->Update($sql);
-    echo json_encode(array("status"=>true,'action'=>"hint",'hint'=>array("status"=>"good","msg"=>$Notice)));
+    echo json_encode(array("status" => true, 'action' => "hint", 'hint' => array("status" => "good", "msg" => $Notice)));
 }
 
 //header('Content-type: application/json');
@@ -112,7 +111,6 @@ switch ($_POST['action']) {
             echo json_encode($json);
             die();
         }
-        $array->type = json_encode($array);
         $array = json_encode($array);
         $DataArr = array(
             'name' => $name,
@@ -216,7 +214,7 @@ EOF;
         $DataArr = array(
             'gname' => $_POST['gname'],
             'template' => $_POST['gtemplate'],
-            'spy' => $_POST['gspy'],
+            'spy' => (boolean)$_POST['gspy'],
             'oauth' => json_encode($data),
             'status' => "正常"
         );
@@ -225,8 +223,8 @@ EOF;
         $zbp->db->Update($sql);
         $json = new stdClass();
         $json->status = true;
-        $json->action="hint";
-        $json->hint=array("status"=>"good","msg"=> "用户组已删除");
+        $json->action = "hint";
+        $json->hint = array("status" => "good", "msg" => "修改已保存", "spy" => $_POST['gspy']);
         $json = json_encode($json);
         echo $json;
         break;
@@ -236,7 +234,7 @@ EOF;
         $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], 'gname', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
         if (!empty($array)) {
-            echo json_encode(array("status"=>false,"action"=>"vtip","vtip"=>array("place"=>"gname","msg"=>"该群组名称已存在")));
+            echo json_encode(array("status" => false, "action" => "vtip", "vtip" => array("place" => "gname", "msg" => "该群组名称已存在")));
             die();
         }
         $catelist = new stdClass();

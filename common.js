@@ -11,7 +11,7 @@ function showMsg(data) {
             break;
         default:
             alert("程序出错啦!详见控制台");
-            console.log(json);
+            console.log(data);
     }
 }
 

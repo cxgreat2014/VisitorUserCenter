@@ -94,6 +94,7 @@ EOF;
         </div>
     </div>
     <!--<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-3.0.0.min.js"></script>-->
+    <script src="common.js" type="text/javascript"></script>
     <script type="text/javascript">
         AddHeaderIcon("<?php echo $bloghost . 'zb_users/plugin/oauth2/logo.png';?>");
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime(),

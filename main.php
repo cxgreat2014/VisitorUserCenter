@@ -15,6 +15,8 @@ if (!$zbp->CheckPlugin('oauth2')) {
 $blogtitle = 'oauth2 - 用户管理';
 require '../../../zb_system/admin/admin_header.php';
 require '../../../zb_system/admin/admin_top.php';
+require './dbop.php';
+$oauth2 = new Oauth2();
 ?>
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle; ?></div>
@@ -36,15 +38,17 @@ require '../../../zb_system/admin/admin_top.php';
                 </tr>
                 <?php
                 $str = "";
+                $groupselect = "";
                 $gifm = array();
-                $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
-                $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
+                $array = $oauth2->GetGroupList();
                 foreach ($array as $key => $reg) {
                     $gid = $reg->gid;
                     $gifm[$gid] = $reg->gname;
+                    if ($reg->status != "已删除") {
+                        $groupselect .= "<option value=\"$gid\">{$reg->gname}</option>";
+                    }
                 }
-                $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_user'], '*');
-                $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user'], $sql);
+                $array = $oauth2->GetUserList();
                 foreach ($array as $key => $reg) {
                     if ($reg->status != "已删除") {
                         $json = json_decode($reg->type);
@@ -60,11 +64,8 @@ require '../../../zb_system/admin/admin_top.php';
                         $str .= '</td>';
                         $str .= '<td class="td15">' . $reg->email . '</td>';
                         $str .= '<td class="td5 tdCenter">' . $reg->invcode . '</td>';
-                        $where = array(array('=', 'uid', $reg->uid));
-                        $order = array('time' => 'DESC');
-                        $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_history'], 'time', $where, $order, null, null);
-                        $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history'], $sql);
-                        $str .= '<td class="td20 tdCenter">' . (empty($array) ? "用户尚未登录" : date('Y-m-d H:i:s', $array[0]->time)) . '</td>';
+                        $array = $oauth2->GetUserLastLogin($reg->uid);
+                        $str .= '<td class="td20 tdCenter">' . (empty($array) ? "用户尚未登录" :  $array[0]->time) . '</td>';
                         $str .= '<td class="td5 tdCenter">' . $reg->status . '</td>';
                         $str .= '<td class="td10 tdCenter">
                             <a href="#" class="button"><img src="../../../zb_system/image/admin/page_edit.png" alt="编辑" title="编辑" width="16"></a>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -74,21 +75,11 @@ require '../../../zb_system/admin/admin_top.php';
                     }
                 }
                 echo $str;
-
-                $groupselect = "";
-                $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
-                $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
-                foreach ($array as $key => $reg) {
-                    if ($reg->status != "已删除") {
-                        $gid = $reg->gid;
-                        $groupselect .= "<option value=\"$gid\">{$reg->gname}</option>";
-                    }
-                }
                 ?>
                 <tr>
                     <td colspan="7" class="tdCenter"></td>
                     <td class="tdCenter">
-                        <button class="lbt" type="button" onclick="addNewUser()">
+                        <button class="lbt" type="button">
                             新建用户
                         </button>
                     </td>
@@ -113,19 +104,19 @@ require '../../../zb_system/admin/admin_top.php';
         });
 
         $(document).on('click', "a.button", function () {
-            var GroupLine = $(this).parent().parent();
-            var child = GroupLine.children();
-            var uid = child.eq(0),
-                name = child.eq(1),
-                group = child.eq(2),
-                invcode = child.eq(4),
-                status = child.eq(6);
+            var trline = $(this).parent().parent();
+            var child = trline.children();
+            var uidt = child.eq(0),
+                namet = child.eq(1),
+                groupt = child.eq(2),
+                invcodet = child.eq(4),
+                statust = child.eq(6);
             if ($(this).children().attr("alt") == "编辑") {
                 $(this).children().attr({"src": "../../../zb_system/image/admin/tick.png", "alt": "保存", "title": "保存"});
-                name.html($(nameinput).val($.trim(name.text())));
-                group.html($(groupselect).val($.trim(group.text())));
-                invcode.html($(invinput).children().first().val($.trim(invcode.text())));
-                status.html($(statusselect).val($.trim(status.text())));
+                namet.html($(nameinput).val($.trim(namet.text())));
+                groupt.html($(groupselect).val($.trim(groupt.text())));
+                invcodet.html($(invinput).children().first().val($.trim(invcodet.text())));
+                statust.html($(statusselect).val($.trim(statust.text())));
             } else if ($(this).children().attr("alt") == "提交" || $(this).children().attr("alt") == "保存") {
                 var namei = child.eq(1).children().eq(0),
                     groups = child.eq(2).children().eq(0),
@@ -143,11 +134,11 @@ require '../../../zb_system/admin/admin_top.php';
                     return;
                 }
 
-                if (uid.text() == "") {
+                if (uidt.text() == "") {
                     json.action = "CreatUser";
                 } else {
                     json.action = "UpdateUser";
-                    json.uid = uid.text();
+                    json.uid = uidt.text();
                 }
 
                 if (groups.val() == "自定义") {
@@ -170,40 +161,40 @@ require '../../../zb_system/admin/admin_top.php';
                         if (!data.status) {
                             return;
                         }
-                        GroupLine.fadeOut("slow", function () {
-                            uid.html(data.uid);
-                            name.html(namei.val());
-                            group.html(groups.val());
-                            invcode.html(invcodei.val());
-                            status.html(statuss.val());
-                            GroupLine.find('img[alt="提交"],img[alt="保存"]').attr({
+                        trline.fadeOut("slow", function () {
+                            uidt.html(data.uid);
+                            namet.html(namei.val());
+                            groupt.html(groups.val());
+                            invcodet.html(invcodei.val());
+                            statust.html(statuss.val());
+                            trline.find('img[alt="提交"],img[alt="保存"]').attr({
                                 "src": "../../../zb_system/image/admin/page_edit.png",
                                 "alt": "编辑",
                                 "title": "编辑"
                             });
-                            if (GroupLine.find('[id^="GroupName"]').length > 0) {
-                                GroupLine.removeAttr("style").fadeIn("slow");
+                            if (child.eq(5).text().length > 0) {
+                                trline.removeAttr("style").fadeIn("slow");
                             } else {
-                                GroupLine.removeAttr("style").insertBefore($("tr:last"));
+                                trline.removeAttr("style").insertBefore($("tr:last"));
                             }
                         });
                     }
                 });
             } else {
-                if (GroupLine.children().first().text() != "") {
+                if (trline.children().first().text() != "") {
                     $.ajax({
                         url: cmdw,
                         type: "POST",
                         data: {
                             action: "DelUser",
-                            uid: uid.text()
+                            uid: uidt.text()
                         },
                         dataType: "json",
                         success: function (data) {
                             showMsg(data);
                             if (data.status) {
-                                GroupLine.fadeOut("slow", function () {
-                                    GroupLine.remove();
+                                trline.fadeOut("slow", function () {
+                                    trline.remove();
                                 });
                             } else {
                                 alert("删除失败,详情请见控制台");
@@ -218,12 +209,12 @@ require '../../../zb_system/admin/admin_top.php';
                         }
                     })
                 } else {
-                    GroupLine.remove();
+                    trline.remove();
                 }
             }
         });
 
-        function addNewUser() {
+        $("tr:last").find("button").eq(0).click(function() {
             var jnode = $('<tr class="color3">' +
                 '<td class="td5 tdCenter">&nbsp;</td>' +
                 '<td class="td10">' + nameinput + '</td>' +
@@ -242,7 +233,7 @@ require '../../../zb_system/admin/admin_top.php';
             if (newnum > 1) {
                 $("[colspan='7']").html('<button class="lbt" type="button"> 提交全部 </button>');
             }
-        }
+        });
 
 
         function getRandomString(ipt) {
