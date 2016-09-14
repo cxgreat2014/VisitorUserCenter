@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin version="php">
-<id>oauth2</id>
-<name>oauth2</name>
-<url>https://dev.junziruogong.xyz/</url>
-<note>oauth2</note>
-<description>oauth2</description>
-<path>main.php</path>
-<include>include.php</include>
-<level>1</level>
-<author>
-  <name>admin</name>
-  <email>cxgreat2014@163.com</email>
-  <url>https://dev.junziruogong.xyz/</url>
-</author>
-<source>
-  <name></name>
-  <email></email>
-  <url></url>
-</source>
-<adapted>150101</adapted>
-<version>1.1</version>
-<pubdate>2016-06-25</pubdate>
-<modified>2016-08-27</modified>
-<price>0</price>
-<advanced>
-  <dependency></dependency>
-  <rewritefunctions></rewritefunctions>
-  <conflict></conflict>
-</advanced>
-<sidebars>
-  <sidebar1></sidebar1>
-  <sidebar2></sidebar2>
-  <sidebar3></sidebar3>
-  <sidebar4></sidebar4>
-  <sidebar5></sidebar5>
-</sidebars>
+    <id>oauth2</id>
+    <name>oauth2</name>
+    <url>https://dev.junziruogong.xyz/</url>
+    <note>oauth2</note>
+    <description>oauth2</description>
+    <path>main.php</path>
+    <include>include.php</include>
+    <level>1</level>
+    <author>
+        <name>admin</name>
+        <email>cxgreat2014@163.com</email>
+        <url>https://dev.junziruogong.xyz/</url>
+    </author>
+    <source>
+        <name></name>
+        <email></email>
+        <url></url>
+    </source>
+    <adapted>150101</adapted>
+    <version>1.1</version>
+    <pubdate>2016-06-25</pubdate>
+    <modified>2016-08-27</modified>
+    <price>0</price>
+    <advanced>
+        <dependency></dependency>
+        <rewritefunctions></rewritefunctions>
+        <conflict></conflict>
+    </advanced>
+    <sidebars>
+        <sidebar1></sidebar1>
+        <sidebar2></sidebar2>
+        <sidebar3></sidebar3>
+        <sidebar4></sidebar4>
+        <sidebar5></sidebar5>
+    </sidebars>
 </plugin>

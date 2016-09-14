@@ -14,6 +14,8 @@ if (!$zbp->CheckPlugin('oauth2')) {
 $blogtitle = 'oauth2 - 分组授权';
 require $blogpath . 'zb_system/admin/admin_header.php';
 require $blogpath . 'zb_system/admin/admin_top.php';
+require './dbop.php';
+$oauth2 = new Oauth2();
 ?>
     <div id="divMain">
         <div class="divHeader"><?php echo $blogtitle; ?></div>
@@ -46,8 +48,7 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                 </tr>
                 <?php
                 $str = "";
-                $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_group'], '*');
-                $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group'], $sql);
+                $array = $oauth2->GetGroupList();
                 foreach ($array as $key => $reg) {
                     $gid = $reg->gid;
                     $json = json_decode($reg->oauth);
@@ -122,7 +123,7 @@ EOF;
                     '</select>').val($.trim(tmp.text())));
             } else if ($(this).children().attr("alt") == "提交" || $(this).children().attr("alt") == "保存") {
                 tmp = GroupLine.children();
-                var gname=tmp.eq(1).children().eq(0);
+                var gname = tmp.eq(1).children().eq(0);
                 if (gname.val() == "") {
                     vtip(gname);
                     return;

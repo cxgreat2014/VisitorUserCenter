@@ -65,7 +65,7 @@ $oauth2 = new Oauth2();
                         $str .= '<td class="td15">' . $reg->email . '</td>';
                         $str .= '<td class="td5 tdCenter">' . $reg->invcode . '</td>';
                         $array = $oauth2->GetUserLastLogin($reg->uid);
-                        $str .= '<td class="td20 tdCenter">' . (empty($array) ? "用户尚未登录" :  $array[0]->time) . '</td>';
+                        $str .= '<td class="td20 tdCenter">' . (empty($array) ? "用户尚未登录" : $array[0]->time) . '</td>';
                         $str .= '<td class="td5 tdCenter">' . $reg->status . '</td>';
                         $str .= '<td class="td10 tdCenter">
                             <a href="#" class="button"><img src="../../../zb_system/image/admin/page_edit.png" alt="编辑" title="编辑" width="16"></a>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -214,7 +214,7 @@ $oauth2 = new Oauth2();
             }
         });
 
-        $("tr:last").find("button").eq(0).click(function() {
+        $("tr:last").find("button").eq(0).click(function () {
             var jnode = $('<tr class="color3">' +
                 '<td class="td5 tdCenter">&nbsp;</td>' +
                 '<td class="td10">' + nameinput + '</td>' +
