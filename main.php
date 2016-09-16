@@ -137,11 +137,11 @@ $oauth2 = new Oauth2();
                     return;
                 }
 
-                if (uidt.text() == "") {
+                if ($.trim(uidt.text()) == "") {
                     json.action = "CreatUser";
                 } else {
                     json.action = "UpdateUser";
-                    json.uid = uidt.text();
+                    json.uid = $.trim(uidt.text());
                 }
 
                 if (groups.val() == "自定义") {
@@ -177,7 +177,7 @@ $oauth2 = new Oauth2();
                                 "alt": "编辑",
                                 "title": "编辑"
                             });
-                            if (child.eq(5).text().length > 0) {
+                            if ($.trim(child.eq(5).text()).length > 0) {
                                 trline.removeAttr("style").fadeIn("slow");
                             } else {
                                 trline.removeAttr("style").insertBefore($("tr:last"));
@@ -186,7 +186,7 @@ $oauth2 = new Oauth2();
                     }
                 });
             } else {
-                if (trline.children().first().text() != "") {
+                if ($.trim(trline.children().first().text()) != "") {
                     $.ajax({
                         url: cmdw,
                         type: "POST",
