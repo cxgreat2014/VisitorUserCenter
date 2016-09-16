@@ -18,20 +18,23 @@ class JsonReply {
         $this->json['vtip'] = array('place' => $place, 'msg' => $msg);
     }
 
-    function SetAlert($msg,$Debug) {
+    function SetAlert($msg, $Debug) {
         $this->json['action'] = 'alert';
         $this->json['msg'] = array('debug' => $Debug, 'msg' => $msg);
     }
 
-    function SetHint($status,$msg){
-        $this->json['action']='hint';
-        $this->json['hint']=array('status'=>$status,'msg'=>$msg);
+    function SetHint($status, $msg) {
+        $this->json['action'] = 'hint';
+        $this->json['hint'] = array('status' => $status, 'msg' => $msg);
     }
-    function SendJson(){
-        if(empty($this->json['status']))$this->json['status']=true;
+
+    function SendJson() {
+        header('Content-type: application/json');
+        if (!isset($this->json['status'])) $this->json['status'] = true;
         echo json_encode($this->json);
     }
-    function SendJsonWithDie(){
+
+    function SendJsonWithDie() {
         $this->SendJson();
         die();
     }

@@ -14,7 +14,7 @@ if (!$zbp->CheckPlugin('oauth2')) {
 $blogtitle = 'oauth2 - 分组授权';
 require $blogpath . 'zb_system/admin/admin_header.php';
 require $blogpath . 'zb_system/admin/admin_top.php';
-require './dbop.php';
+require './class/oauth2.php';
 $oauth2 = new Oauth2();
 ?>
     <div id="divMain">
@@ -23,13 +23,13 @@ $oauth2 = new Oauth2();
         <div id="divMain2">
             <table border="1" class="tableFull tableBorder tableBorder-thcenter">
                 <tbody>
-                <tr>
-                    <td colspan="3" id="notice">
+                <!--<tr>
+                    <td colspan="3" id="notice" style="display: none;">
                         <p style="color:#960;padding:0.8em;">
                             暂时为空
                         </p>
                     </td>
-                </tr>
+                </tr>-->
                 <tr class="color1">
                     <th>GID</th>
                     <th>用户组</th>
@@ -94,14 +94,13 @@ EOF;
                     </td>
         </div>
     </div>
-    <!--<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-3.0.0.min.js"></script>-->
     <script src="common.js" type="text/javascript"></script>
     <script type="text/javascript">
         AddHeaderIcon("<?php echo $bloghost . 'zb_users/plugin/oauth2/logo.png';?>");
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime(),
             nid = 0;
         $("td[colspan='4']").attr("colspan", "6");
-        $("#notice").attr("colspan", $("tr.color1").children().length);
+        //$("#notice").attr("colspan", $("tr.color1").children().length);
         $(":checkbox").prop("disabled", true);
 
         $(document).on('click', "a.button", function () {
@@ -182,9 +181,9 @@ EOF;
                             },
                             dataType: "json",
                             success: function (data) {
+                                showMsg(data);
                                 if (data.status) {
                                     GroupLine.fadeOut("slow", function () {
-                                        eval(data.script);
                                         GroupLine.remove();
                                     });
                                 } else {
@@ -217,6 +216,7 @@ EOF;
                     Nid: nid
                 },
                 success: function (data) {
+                    console.log(data);
                     $("tr:last").before(data.html);
                 }
             });
@@ -272,7 +272,7 @@ EOF;
                     checkboxs.next(":contains(允许)").text(" 禁止");
                     break;
                 default:
-                    alert("程序出BUG啦~！\r\n快联系我修复:\r\nQQ:1437826301\r\nE-Mail:cxgreat2014@163.com");
+                    alert("程序出BUG啦~！\r\n详情请见控制台");
                     console.log(String);
             }
         }

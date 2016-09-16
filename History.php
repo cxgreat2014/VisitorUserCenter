@@ -11,7 +11,8 @@ if (!$zbp->CheckPlugin('oauth2')) {
     $zbp->ShowError(48);
     die();
 }
-
+require './class/oauth2.php';
+$oauth2 = new Oauth2();
 $blogtitle = 'oauth2 - 记录查询';
 require $blogpath . 'zb_system/admin/admin_header.php';
 require $blogpath . 'zb_system/admin/admin_top.php';
@@ -34,36 +35,18 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                 </tr>
                 <tr class="color3">
                     <?php
-                    $where = '';//array(array('=','sean_Type','0'));
-                    $order = '';
-                    array('sean_IsUsed' => 'DESC', 'sean_Order' => 'ASC');
-                    $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_history'], '*', $where, $order, null, null);
-                    $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history'], $sql);
+                    $str = "";
+                    $array = $oauth2->GetHistoryList();
                     foreach ($array as $key => $reg) {
-                        $str .= '<td class="td5 tdCenter">' . $reg->logid . '</td>';
+                        $str .= '<tr><td class="td5 tdCenter">' . $reg->logid . '</td>';
                         $str .= '<td class="td5">' . $reg->uid . '</td>';
-                        $str .= '<td class="td10">' . $i . '</td>';
-                        $str .= '<td><input type="hidden" name="title" value="' . $reg->Title . '" >' . $reg->Title . '</td>';
-                        $str .= '<td><input  type="hidden"  name="img"  value="' . $reg->Img . '" /><img src="' . $reg->Img . '" width="190" height="120" border="0"></td>';
-                        $str .= '<td><input type="hidden" name="url" value="' . $reg->Url . '" >' . $reg->Url . '</td>';
-                        $str .= '<td><div class="evo-colorind" style="background-color:' . $reg->Code . '"></div></td>';
-                        $str .= '<td><input type="text" class="sedit" name="order" value="' . $reg->Order . '" style="width:40px"></td>';
-                        $str .= '<td><input type="text" class="checkbox" name="IsUsed" value="' . $reg->IsUsed . '" /></td>';
-                        $str .= '<td nowrap="nowrap">
-                        <input type="hidden" name="editid" value="' . $reg->ID . '">
-                        <input name="edit" type="submit" class="button" value="修改"/>
-                        <input name="del" type="button" class="button" value="删除" onclick="if(confirm(\'您确定要进行删除操作吗？\')){location.href=\'save.php?type=flashdel&id=' . $reg->ID . '\'}"/>
-                    </td>';
+                        $str .= '<td class="td10">' . $oauth2->GetUserByUid($reg->uid)[0]->name . '</td>';
+                        $str .= '<td>' . $reg->time . '</td>';
+                        $str .= '<td>' . $reg->logtype . '</td>';
+                        $str .= '<td>' . $reg->logmsg . '</td>';
                         $str .= '</tr>';
-                        $str .= '</form>';
-                        /*                    <td class="td5 tdCenter">1</td>
-                    <td class="td10">admin</td>
-                    <td class="td10">admin</td>
-                    <td>admin</td>
-                    <td class="td15">admin@<?php echo $_SERVER['SERVER_NAME']; ?></td>
-                    <td class="td20 tdCenter"><?php echo date('Y-m-d h:i:s',time()); ?></td>
-                    <td class="td5">公开</td>*/
                     }
+                    echo $str;
                     ?>
                 </tr>
                 </tbody>

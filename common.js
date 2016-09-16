@@ -32,7 +32,7 @@ function vtip(obj, msg) {
         "padding-left": "31px",
         "padding-right": "11px"
     });
-    tip.children().first().attr("style", "top:" + (tip.outerHeight() - 2).toString() + "px;")
+    tip.children().first().attr("style", "top:" + (tip.outerHeight() - 3).toString() + "px;")
     tip.fadeIn("slow", function () {
         $(this).delay(6000).fadeOut("slow", function () {
             this.remove()

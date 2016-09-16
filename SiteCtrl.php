@@ -108,7 +108,7 @@ $("body").html("<div style=\"position:fixed;top:0;left:0;width:100%;height:100%;
                 <table class="tb-set" width="100%">
                     <tr>
                         <td colspan="2"><p style="color:#960;padding:0.8em;">
-                                此处设定将影响前端JS代码，实现禁止右键、选择(复制)、屏蔽F5刷新、屏蔽开发者控制台入口，以及禁止网站被框架引用、临时关站等功能。可在<a href="main.php">用户授权</a>面板对特定用户放宽权限控制
+                                此处设定将影响前端JS代码，实现禁止右键、选择(复制)、屏蔽F5刷新、屏蔽开发者控制台入口，以及禁止网站被框架引用、临时关站等功能。可在<a href="main.php">用户管理</a>面板对特定用户放宽权限控制
                             </p></td>
                     </tr>
                     <tr>
