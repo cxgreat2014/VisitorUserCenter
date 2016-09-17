@@ -56,7 +56,7 @@ $oauth2 = new Oauth2();
                         $str .= <<<EOF
 <tr class="color3">
 <td class="td5 tdCenter">$gid</td>
-<td class="td5" id="GroupName$gid">
+<td sytle="width:6%;" id="GroupName$gid">
 $reg->gname
 </td>
 <td class="td10" id="GroupTemplate$gid">
@@ -99,7 +99,7 @@ EOF;
         AddHeaderIcon("<?php echo $bloghost . 'zb_users/plugin/oauth2/logo.png';?>");
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime(),
             nid = 0;
-        $("td[colspan='4']").attr("colspan", "6");
+        $("td[colspan='4']").attr("colspan", $("tr.color1").children().length-1);
         //$("#notice").attr("colspan", $("tr.color1").children().length);
         $(":checkbox").prop("disabled", true);
 

@@ -32,19 +32,23 @@ require $blogpath . 'zb_system/admin/admin_top.php';
                     <th>记录时间</th>
                     <th>消息类型</th>
                     <th>消息内容</th>
+                    <th>管理</th>
                 </tr>
                 <tr class="color3">
                     <?php
                     $str = "";
                     $array = $oauth2->GetHistoryList();
                     foreach ($array as $key => $reg) {
-                        $str .= '<tr><td class="td5 tdCenter">' . $reg->logid . '</td>';
-                        $str .= '<td class="td5">' . $reg->uid . '</td>';
-                        $str .= '<td class="td10">' . $oauth2->GetUserByUid($reg->uid)[0]->name . '</td>';
-                        $str .= '<td>' . $reg->time . '</td>';
-                        $str .= '<td>' . $reg->logtype . '</td>';
-                        $str .= '<td>' . $reg->logmsg . '</td>';
-                        $str .= '</tr>';
+                        if ($reg->type == "正常") {
+                            $str .= '<tr><td class="td5 tdCenter">' . $reg->logid . '</td>';
+                            $str .= '<td class="td5">' . $reg->uid . '</td>';
+                            $str .= '<td class="td10">' . ($reg->uid == '0' ? 'system' : $oauth2->GetUserByUid($reg->uid)[0]->name) . '</td>';
+                            $str .= '<td>' . $reg->time . '</td>';
+                            $str .= '<td>' . $reg->logmod . '</td>';
+                            $str .= '<td>' . $reg->logmsg . '</td>';
+                            $str .= '<td><a href="#" class="button"><img src="../../../zb_system/image/admin/delete.png" alt="删除" title="删除" width="16"></a></td>';
+                            $str .= '</tr>';
+                        }
                     }
                     echo $str;
                     ?>

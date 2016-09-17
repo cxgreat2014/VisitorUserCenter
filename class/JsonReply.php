@@ -7,7 +7,7 @@
  * Time: 19:10
  */
 class JsonReply {
-    var $json = array();
+    public $json = array();
 
     function ChangeStatus($status) {
         $this->json['status'] = $status;

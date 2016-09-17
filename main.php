@@ -169,7 +169,7 @@ $oauth2 = new Oauth2();
                         trline.fadeOut("slow", function () {
                             uidt.html(data.uid);
                             namet.html(namei.val());
-                            groupt.html(groups.val());
+                            groupt.html(groups.find("option:selected").text());
                             invcodet.html(invcodei.val());
                             statust.html(statuss.val());
                             trline.find('img[alt="提交"],img[alt="保存"]').attr({

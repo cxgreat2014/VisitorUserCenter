@@ -28,11 +28,8 @@ class Oauth2 {
         } elseif (empty($Status)) {
             throw new Exception("No Status Set!", 1);
         }
-        global $zbp, $jrp;
-        $array = array('status' => $Status);
-        $where = array(array('=', 'uid', $uid));
-        $sql = $zbp->db->sql->Update($GLOBALS['table']['plugin_oauth2_user'], $array, $where);
-        $zbp->db->Update($sql);
+        global $jrp;
+        $this->UpdateUser($uid, array('status' => $Status));
         $jrp->ChangeStatus(true);
         $jrp->SetHint("good", $Notice);
         $jrp->SendJsonWithDie();
@@ -60,11 +57,8 @@ class Oauth2 {
     }
 
     function GetUserLastLogin($uid) {
-        global $zbp;
         $where = array(array('=', 'uid', $uid));
-        $order = array('time' => 'DESC');
-        $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_history'], '*', $where, $order, null, null);
-        $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history'], $sql);
+        $array = $this->GetHistoryList($where);
         return $array;
     }
 
@@ -103,11 +97,26 @@ class Oauth2 {
     }
 
     //history
-    function GetHistoryList($order = null) {
+    function GetHistoryList($where = null, $order = null) {
         global $zbp;
         if (empty($order)) $order = array('time' => 'ASC');//'sean_IsUsed' => 'DESC',
-        $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_history'], '*', null, $order, null, null);
+        $sql = $zbp->db->sql->Select($GLOBALS['table']['plugin_oauth2_history'], '*', $where, $order, null, null);
         $array = $zbp->GetListCustom($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history'], $sql);
         return $array;
+    }
+
+    function OutputLog() {
+        global $zbp;
+        $DataArr = array();
+        $sql = $zbp->db->sql->Insert($GLOBALS['table']['plugin_oauth2_history'], $DataArr);
+        $zbp->db->Insert($sql);
+    }
+
+    function DeleteLog($logid) {
+        global $zbp;
+        $where = array(array('=', 'logid', $logid));
+        $DataArr=array('type' => '已删除');
+        $sql = $zbp->db->sql->Update($GLOBALS['table']['plugin_oauth2_history'], $DataArr, $where);
+        $zbp->db->Update($sql);
     }
 }

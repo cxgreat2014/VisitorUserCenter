@@ -1,5 +1,38 @@
 <?php
-require dirname(__FILE__) . '/class/o2df.php';
+//数据库定义开始
+$table['plugin_oauth2_user'] = '%pre%plugin_oauth2_user';
+$datainfo['plugin_oauth2_user'] = array(
+    'uid' => array('uid', 'integer', '', 0),
+    'name' => array('name', 'string', 32, ''),
+    'pwd' => array('pwd', 'string', 32, ''),
+    'type' => array('type', 'string', '', ''),
+    'gid' => array('gid', 'integer', "", 0),
+    'status' => array('status', 'string', 32, '禁止访问'),
+    'email' => array('email', 'string', 128, ''),
+    'invcode' => array('invcode', 'string', 6, ''),
+    'token' => array('token', 'string', 32, '')
+);
+
+$table['plugin_oauth2_group'] = '%pre%plugin_oauth2_group';
+$datainfo['plugin_oauth2_group'] = array(
+    'gid' => array('gid', 'integer', '', 0),
+    'gname' => array('gname', 'string', 32, ''),
+    'template' => array('template', 'string', 32, '禁止访问'),
+    'spy' => array('spy', 'boolean', "", true),
+    'oauth' => array('oauth', 'string', '', ''),//json oauthcate
+    'status' => array('status', "string", 32, '禁止访问')
+);
+
+$table['plugin_oauth2_history'] = '%pre%plugin_oauth2_history';
+$datainfo['plugin_oauth2_history'] = array(
+    'logid' => array('logid', 'integer', '', 0),
+    'uid' => array('uid', 'integer', '', 0), //用户ID 0=system
+    'time' => array('time', 'timestamp', '', 0), //
+    'logmod' => array('logmod', 'string', '', ''), //日志类型，暂时有 local ipv4 ipv6 ipcn
+    'logmsg' => array('logmsg', 'string', '', ''), //日志消息
+    'type'=>array('type','string','','正常')
+);
+//数据库定义结束
 #注册插件
 RegisterPlugin("oauth2", "ActivePlugin_oauth2");
 
@@ -14,6 +47,21 @@ function oauth2_MakeTemplatetags() {
 
 function InstallPlugin_oauth2() {
     global $zbp;
+    oauth2_CreatTable();
+    //配置初始化
+    $zbp->Config('oauth2')->normenu = '0';
+    $zbp->Config('oauth2')->noselect = '0';
+    $zbp->Config('oauth2')->nof5 = '0';
+    $zbp->Config('oauth2')->nof12 = '0';
+    $zbp->Config('oauth2')->noiframe = '1';
+    $zbp->Config('oauth2')->closesite = '0';
+    $zbp->Config('oauth2')->closetips = '网站正在维护，请稍后再访问';
+
+    $zbp->Config('oauth2')->siteprocted = false;
+    $zbp->SaveConfig('oauth2');
+}
+function oauth2_CreatTable(){
+    global $zbp;
     //数据库检测与创建
     if (!$zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_user'])) {
         $s = $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user']);
@@ -27,17 +75,6 @@ function InstallPlugin_oauth2() {
         $s = $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history']);
         $zbp->db->QueryMulit($s);
     }
-    //配置初始化
-    $zbp->Config('oauth2')->normenu = '0';
-    $zbp->Config('oauth2')->noselect = '0';
-    $zbp->Config('oauth2')->nof5 = '0';
-    $zbp->Config('oauth2')->nof12 = '0';
-    $zbp->Config('oauth2')->noiframe = '1';
-    $zbp->Config('oauth2')->closesite = '0';
-    $zbp->Config('oauth2')->closetips = '网站正在维护，请稍后再访问';
-
-    $zbp->Config('oauth2')->siteprocted = false;
-    $zbp->SaveConfig('oauth2');
 }
 
 function UninstallPlugin_oauth2() {

@@ -15,7 +15,6 @@ if (!$zbp->CheckPlugin('oauth2')) {
 }
 $oauth2 = new Oauth2();
 function CheckParamIsSet() {
-    $total = 0;
     $args = func_get_args();
     for ($i = 0; $i < count($args); $i++) {
         if (is_string($args[$i])) {
@@ -23,7 +22,7 @@ function CheckParamIsSet() {
                 echo '{"status":false,"vtip":"Post ' . $args[$i] . ' Error"}';
                 die();
             } elseif (preg_match("/[\'.,:;*?~`!#$%^&+=)(<>{}]|\]|\[|\/|\\\|\"|\|/", $_POST[$args[$i]])) {
-                echo '{"status":false,"vtip":"Post ' . $args[$i] . ' Error. It Has Special Word"}';
+                echo '{"status":false,"action":"alert",msg:{msg:"Post ' . $args[$i] . ' Error. It Has Special Word"}}';
                 die();
             }
         }
