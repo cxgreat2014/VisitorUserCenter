@@ -17,25 +17,23 @@ if ($_GET['reset'] == "true") {
 }
 function oauth2_Reset() {
     global $zbp;
-    if ($zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_user'])) {
-        $s = $zbp->db->sql->DelTable($GLOBALS['table']['plugin_oauth2_user']);
-        $zbp->db->QueryMulit($s);
+    $user_table = $GLOBALS['table']['plugin_oauth2_user'];
+    $group_table = $GLOBALS['table']['plugin_oauth2_group'];
+    $history_table = $GLOBALS['table']['plugin_oauth2_history'];
+    $sql = "";
+    if ($zbp->db->ExistTable($user_table)) {
+        $sql .= $zbp->db->sql->DelTable($user_table) . ";";
     }
-    if ($zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_group'])) {
-        $s = $zbp->db->sql->DelTable($GLOBALS['table']['plugin_oauth2_group']);
-        $zbp->db->QueryMulit($s);
+    if ($zbp->db->ExistTable($group_table)) {
+        $sql .= $zbp->db->sql->DelTable($group_table) . ";";
     }
-    if ($zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_history'])) {
-        $s = $zbp->db->sql->DelTable($GLOBALS['table']['plugin_oauth2_history']);
-        $zbp->db->QueryMulit($s);
+    if ($zbp->db->ExistTable($history_table)) {
+        $sql .= $zbp->db->sql->DelTable($history_table) . ";";
     }
-
-    $s = $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group']);
-    $zbp->db->QueryMulit($s);
-    $s = $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user']);
-    $zbp->db->QueryMulit($s);
-    $s = $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history']);
-    $zbp->db->QueryMulit($s);
+    $sql.=$zbp->db->sql->CreateTable($group_table, $GLOBALS['datainfo']['plugin_oauth2_group']).";";
+    $sql.=$zbp->db->sql->CreateTable($user_table, $GLOBALS['datainfo']['plugin_oauth2_user']).";";
+    $sql.=$zbp->db->sql->CreateTable($history_table, $GLOBALS['datainfo']['plugin_oauth2_history']).";";
+    $zbp->db->QueryMulit($sql);
 
     //配置初始化
     $zbp->Config('oauth2')->normenu = '0';
