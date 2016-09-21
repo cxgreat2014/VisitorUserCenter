@@ -115,8 +115,17 @@ class Oauth2 {
     function DeleteLog($logid) {
         global $zbp;
         $where = array(array('=', 'logid', $logid));
-        $DataArr=array('type' => '已删除');
+        $DataArr = array('type' => '已删除');
         $sql = $zbp->db->sql->Update($GLOBALS['table']['plugin_oauth2_history'], $DataArr, $where);
         $zbp->db->Update($sql);
+    }
+
+    //config
+    function SetConfig($key, $value, $ext = null) {
+        global $zbp;
+        $DataArr = array('key' => $key, 'value' => $value);
+        if (!empty($ext)) $DataArr['ext'] = $ext;
+        $sql = $zbp->db->sql->Insert($GLOBALS['table']['plugin_oauth2_config'], $DataArr);
+        $zbp->db->Insert($sql);
     }
 }

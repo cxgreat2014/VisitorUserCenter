@@ -8,20 +8,23 @@ $zbp->Load();*/
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>登录</title>
-    <link rel="stylesheet" type="text/css" href="./css/style.min.css?v=2.10">
-    <link rel="stylesheet" type="text/css" href="./css/aui.css"/>
-    <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-3.0.0.min.js"></script>
-    <script src="//static.geetest.com/static/tools/gt.js"></script>
-    <iframe id="iframe" sandbox="allow-same-origin" style="display: none"></iframe>
-    <script type="text/javascript" src="./class/common.php"></script>
+    <link rel="stylesheet" type="text/css" href="../css/style.min.css?v=2.10">
+    <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+    <script type="text/javascript" src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-3.0.0.min.js"></script>
+    <script type="text/javascript" src="//static.geetest.com/static/tools/gt.js"></script>
+    <script type="text/javascript" src="../js/VaildCode.js"></script>
+    <script type="text/javascript" src="../class/common.php"></script>
     <script type="text/javascript" id="ip138"
             src="//api.ip138.com/query/?ip=&oid=75&callback=ajquery&mid=65600&sign=ef6ac49df59eca9424f0c0777a82c616"></script>
+    <script type="text/javascript" src="../js/easyNotify.js"></script>
 </head>
 <body class="gray-bg">
+<iframe id="iframe" sandbox="allow-same-origin" style="display: none"></iframe>
 <div class="middle-box text-center loginscreen animated fadeInDown">
     <div>
         <div><h1 class="logo-name" style="font-size:65px">博山小叙</h1></div>
-        <form class="m-t" name="f" method="post" action="./class/VerifyUserToken.php">
+        <div id="easyNotify"></div>
+        <form class="m-t" name="f" method="post" action="../class/VerifyUserToken.php">
             <div class="form-group">
                 <div class="aui-input-row">
                     <i class="aui-input-addon  aui-iconfont aui-icon-people"></i>
@@ -44,6 +47,22 @@ $zbp->Load();*/
                    style="margin-top:10px;">
         </form>
     </div>
-    <script type="text/javascript" src="./js/VaildCode.js"></script>
+    <script type="text/javascript">
+        var myCloseInfo = function(){
+            alert('this is a callback function that runs after close the notification.');
+        };
+
+        var options = {
+            title: "您好",
+            options: {
+                body: "欢迎光临 博山小叙.",
+                icon: "icon.jpg",
+                lang: 'zh-CN'
+                //onClose: myCloseInfo
+            }
+        };
+
+        $("#easyNotify").easyNotify(options);
+    </script>
 </body>
 </html>

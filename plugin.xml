@@ -5,7 +5,7 @@
 <url>https://dev.junziruogong.xyz/</url>
 <note>oauth2</note>
 <description>oauth2</description>
-<path>main.php</path>
+<path>ControlPanel/main.php</path>
 <include>include.php</include>
 <level>1</level>
 <author>
@@ -21,7 +21,7 @@
 <adapted>150101</adapted>
 <version>0.6</version>
 <pubdate>2016-06-25</pubdate>
-<modified>2016-09-16</modified>
+<modified>2016-09-21</modified>
 <price>0</price>
 <advanced>
   <dependency></dependency>

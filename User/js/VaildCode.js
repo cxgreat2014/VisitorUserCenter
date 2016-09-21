@@ -14,7 +14,7 @@ var handlerEmbed = function (captchaObj) {
             return;
         } else {
             $.ajax({
-                url: "./class/VerifyUserToken.php?t=" + (new Date()).getTime(),
+                url: "../class/VerifyUserToken.php?t=" + (new Date()).getTime(),
                 type: "POST",
                 data: {
                     user: $("#user").val(),
@@ -36,7 +36,7 @@ var handlerEmbed = function (captchaObj) {
 };
 $.ajax({
     // 获取id，challenge，success（是否启用failback）
-    url: "./class/VerifyUserToken.php?t=" + (new Date()).getTime(),
+    url: "../class/VerifyUserToken.php?t=" + (new Date()).getTime(),
     // 加随机数防止缓存
     type: "get",
     dataType: "json",
