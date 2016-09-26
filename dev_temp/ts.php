@@ -1,17 +1,20 @@
-<?php
+<html>
+<body><?php
 /*
 echo hash('sha256', 'abc');
 echo hash('sha512', 'abc');
-// md5, sha1.. �ȵ�Ҳ�������ôˌ���
 echo hash('md5', 'abc');
 echo hash('sha1', 'abc');*/
-$json = array();
-$json['status'] = false;
-$json['reason'][] = array('place' => 'name', 'msg' => 'aaa');
-$json['reason'][] = array('place' => 'name', 'msg' => 'aaac');
-$json['reason'][] = array('place' => 'invcode', 'msg' => 'aaa');
-$json['reason'][] = array('place' => 'name', 'msg' => 'aaa');
-$json = json_encode($json);
 print $json;
-
 ?>
+<button onclick="hitax();">hit to go</button>
+<script>
+    function hitax() {
+        window.open('ts.php', 'newwindow', 'toolbar=no, menubar=no, location=no, status=no');
+        window.opener = null;
+        window.open("", "_self");
+        window.close();
+    }
+</script>
+</body>
+</html>

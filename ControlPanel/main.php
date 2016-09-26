@@ -1,6 +1,6 @@
 <?php
-require '../../../zb_system/function/c_system_base.php';
-require '../../../zb_system/function/c_system_admin.php';
+require '../../../../zb_system/function/c_system_base.php';
+require '../../../../zb_system/function/c_system_admin.php';
 $zbp->Load();
 $action = 'root';
 if (!$zbp->CheckRights($action)) {
@@ -13,8 +13,8 @@ if (!$zbp->CheckPlugin('oauth2')) {
 }
 
 $blogtitle = 'oauth2 - 用户管理';
-require '../../../zb_system/admin/admin_header.php';
-require '../../../zb_system/admin/admin_top.php';
+require $blogpath.'zb_system/admin/admin_header.php';
+require $blogpath.'zb_system/admin/admin_top.php';
 require './class/oauth2.php';
 $oauth2 = new Oauth2();
 ?>
@@ -68,8 +68,8 @@ $oauth2 = new Oauth2();
                         $str .= '<td class="td20 tdCenter">' . (empty($array) ? "用户尚未登录" : $array[0]->time) . '</td>';
                         $str .= '<td class="tdCenter" style="width: 6%;">' . $reg->status . '</td>';
                         $str .= '<td class="td10 tdCenter">
-                            <a href="#" class="button"><img src="../../../zb_system/image/admin/page_edit.png" alt="编辑" title="编辑" width="16"></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <a href="#" class="button"><img src="../../../zb_system/image/admin/delete.png" alt="删除" title="删除" width="16"></a>
+                            <a href="#" class="button"><img src="./image/page_edit.png" alt="编辑" title="编辑" width="16"></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="#" class="button"><img src="./image/delete.png" alt="删除" title="删除" width="16"></a>
                         </td>';
                         $str .= '</tr>';
                     }
@@ -87,7 +87,7 @@ $oauth2 = new Oauth2();
             </table>
         </div>
     </div>
-    <script src="common.js" type="text/javascript"></script>
+    <script src="js/common.js" type="text/javascript"></script>
     <script type="text/javascript">
         AddHeaderIcon("<?php echo $bloghost . 'zb_users/plugin/oauth2/logo.png';?>");
         var cmdw = "./cmdw.php?t=" + (new Date()).getTime();
@@ -113,7 +113,7 @@ $oauth2 = new Oauth2();
                 invcodet = child.eq(4),
                 statust = child.eq(6);
             if ($(this).children().attr("alt") == "编辑") {
-                $(this).children().attr({"src": "../../../zb_system/image/admin/tick.png", "alt": "保存", "title": "保存"});
+                $(this).children().attr({"src": "./image/tick.png", "alt": "保存", "title": "保存"});
                 namet.html($(nameinput).val($.trim(namet.text())));
                 groupt.html($(groupselect).val($.trim(groupt.text())));
                 var invhtml = $(invinput);
@@ -173,7 +173,7 @@ $oauth2 = new Oauth2();
                             invcodet.html(invcodei.val());
                             statust.html(statuss.val());
                             trline.find('img[alt="提交"],img[alt="保存"]').attr({
-                                "src": "../../../zb_system/image/admin/page_edit.png",
+                                "src": "./image/page_edit.png",
                                 "alt": "编辑",
                                 "title": "编辑"
                             });
@@ -230,8 +230,8 @@ $oauth2 = new Oauth2();
                 '<td class="td20 tdCenter"></td>' +
                 '<td class="tdCenter" style="width: 6%;">' + statusselect +
                 '<td class="td10 tdCenter">' +
-                '<a href="#" class="button"><img src = "../../../zb_system/image/admin/tick.png" alt = "提交" title = "提交" width = "16" ></a>&nbsp;&nbsp;&nbsp;' +
-                '<a href="#" class="button"><img src = "../../../zb_system/image/admin/delete.png" alt = "删除" title = "删除" width = "16" ></a> </td></tr >');
+                '<a href="#" class="button"><img src = "./image/tick.png" alt = "提交" title = "提交" width = "16" ></a>&nbsp;&nbsp;&nbsp;' +
+                '<a href="#" class="button"><img src = "./image/delete.png" alt = "删除" title = "删除" width = "16" ></a> </td></tr >');
             getRandomString(jnode.children().eq(4).children().children().eq(0));
             newnum = jnode;
             $('tr:last').before(jnode);

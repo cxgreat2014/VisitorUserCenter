@@ -1,12 +1,12 @@
 <?php
 define("oauth2_path", dirname(__FILE__) . "/");
-require oauth2_path . 'user/darknet_mod.php';
+require oauth2_path . 'User/darknet_mod.php';
 //数据库定义开始
 $table['plugin_oauth2_user'] = '%pre%plugin_oauth2_user';
 $datainfo['plugin_oauth2_user'] = array(
     'uid' => array('uid', 'integer', '', 0),
     'name' => array('name', 'string', 32, ''),
-    'pwd' => array('pwd', 'string', 32, ''),
+    'pwd' => array('pwd', 'string', '', ''),
     'type' => array('type', 'string', '', ''),
     'gid' => array('gid', 'integer', "", 0),
     'status' => array('status', 'string', 32, '禁止访问'),
@@ -47,12 +47,30 @@ RegisterPlugin("oauth2", "ActivePlugin_oauth2");
 
 function ActivePlugin_oauth2() {
     Add_Filter_Plugin('Filter_Plugin_Zbp_MakeTemplatetags', 'oauth2_MakeTemplatetags');
-    Add_Filter_Plugin('Filter_Plugin_Index_Begin', 'oauth2_ECHO');
+    //Add_Filter_Plugin('Filter_Plugin_Index_Begin', 'oauth2_ECHO');
 }
 
 function oauth2_MakeTemplatetags() {
     global $zbp;
-    $zbp->header .= '<script type="text/javascript">' . file_get_contents(dirname(__FILE__) . "/User/js/SiteCtrl.js") . '</script>' . "\r\n";
+    $zbp->header .= '<script type="text/javascript">' . file_get_contents(oauth2_path . "User/js/SiteCtrl.js") . '</script>' . "\r\n";
+    $zbp->header = '<style type="text/css">' . file_get_contents(oauth2_path . "User/css/bootstrap.min.css") . '</style>' . $zbp->header;
+    $zbp->header .= '<script type="text/javascript">' . file_get_contents(oauth2_path . "User/js/jquery.contextify.js") . '</script>' . "\r\n" ;
+    $zbp->footer.= <<<EOF
+    <script type="text/javascript">
+    //$("#divAll").attr("data-contextify-id","0");
+    window.onload=function(){
+        var options = {items:[
+		  {header: '功能'},
+		  {divider: true},
+		  {text: '第一个链接', href: 'http://www.jq22.com'},
+		  {text: '第二个链接', onclick: function() {alert("你点击了第2个链接")}},
+		  {text: '第三个链接', onclick: function() {alert("你点击了第3个链接")}},
+		  {text: '第四个链接', onclick: function() {alert("你点击了第4个链接")}}
+		]}
+		$('html').contextify(options);
+    }
+	</script>
+EOF;
 }
 
 function InstallPlugin_oauth2() {
@@ -92,8 +110,9 @@ function oauth2_CreatTable() {
     $zbp->db->QueryMulit($s);
 }
 
-function oauth2_init(){
+function oauth2_init() {
 
 }
+
 function UninstallPlugin_oauth2() {
 }

@@ -1,6 +1,6 @@
 <?php
-require '../../../zb_system/function/c_system_base.php';
-require '../../../zb_system/function/c_system_admin.php';
+require '../../../../zb_system/function/c_system_base.php';
+require '../../../../zb_system/function/c_system_admin.php';
 require './class/oauth2.php';
 require './class/JsonReply.php';
 $zbp->Load();
