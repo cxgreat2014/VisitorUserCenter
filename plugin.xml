@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin version="php">
-<id>oauth2</id>
-<name>oauth2</name>
-<url>https://dev.junziruogong.xyz/</url>
-<note>oauth2</note>
-<description>oauth2</description>
+<id>VisitorUserCenter</id>
+<name>访客用户中心</name>
+<url>dev.cxg2014.bit</url>
+<note>实现访问控制</note>
+<description></description>
 <path>ControlPanel/main.php</path>
 <include>include.php</include>
 <level>1</level>
 <author>
   <name>cxgreat2014</name>
   <email>cxgreat2014@163.com</email>
-  <url>https://dev.junziruogong.xyz/</url>
+  <url>cxg2014.bit</url>
 </author>
 <source>
   <name></name>
@@ -19,10 +19,10 @@
   <url></url>
 </source>
 <adapted>150101</adapted>
-<version>0.6</version>
-<pubdate>2016-06-25</pubdate>
-<modified>2016-09-21</modified>
-<price>0</price>
+<version>1.0</version>
+<pubdate>2016-06-12</pubdate>
+<modified>2016-10-02</modified>
+<price>1000</price>
 <advanced>
   <dependency></dependency>
   <rewritefunctions></rewritefunctions>

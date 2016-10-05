@@ -1,118 +1,131 @@
 <?php
-define("oauth2_path", dirname(__FILE__) . "/");
-require oauth2_path . 'User/darknet_mod.php';
-//数据库定义开始
-$table['plugin_oauth2_user'] = '%pre%plugin_oauth2_user';
-$datainfo['plugin_oauth2_user'] = array(
-    'uid' => array('uid', 'integer', '', 0),
-    'name' => array('name', 'string', 32, ''),
-    'pwd' => array('pwd', 'string', '', ''),
-    'type' => array('type', 'string', '', ''),
-    'gid' => array('gid', 'integer', "", 0),
-    'status' => array('status', 'string', 32, '禁止访问'),
-    'email' => array('email', 'string', 128, ''),
-    'invcode' => array('invcode', 'string', 6, ''),
-    'token' => array('token', 'string', 32, '')
-);
-
-$table['plugin_oauth2_group'] = '%pre%plugin_oauth2_group';
-$datainfo['plugin_oauth2_group'] = array(
-    'gid' => array('gid', 'integer', '', 0),
-    'gname' => array('gname', 'string', 32, ''),
-    'template' => array('template', 'string', 32, '禁止访问'),
-    'spy' => array('spy', 'boolean', "", true),
-    'oauth' => array('oauth', 'string', '', ''),//json oauthcate
-    'status' => array('status', "string", 32, '禁止访问')
-);
-
-$table['plugin_oauth2_history'] = '%pre%plugin_oauth2_history';
-$datainfo['plugin_oauth2_history'] = array(
-    'logid' => array('logid', 'integer', '', 0),
-    'uid' => array('uid', 'integer', '', 0), //用户ID 0=system
-    'time' => array('time', 'timestamp', '', 0), //
-    'logmod' => array('logmod', 'string', '', ''), //日志类型，暂时有 local ipv4 ipv6 ipcn
-    'logmsg' => array('logmsg', 'string', '', ''), //日志消息
-    'type' => array('type', 'string', '', '正常')
-);
-$table['plugin_oauth2_config'] = '%pre%plugin_oauth2_config';
-$datainfo['plugin_oauth2_config'] = array(
-    'id' => array('id', 'integer', '', 0),
-    'key' => array('key', 'string', '', ''),
-    'value' => array('value', 'string', '', ''),
-    'ext' => array('ext', 'string', '', '')
-);
-//数据库定义结束
+if(!defined('UC_path')) {
+    define('UC_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "\\1", str_replace('\\', '/', __FILE__)) . "/");
+    define('site_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "", str_replace('\\', '/', __FILE__)) . "/");
+}
+require_once UC_path . 'System/dbconfig.php';
+require_once UC_path . 'ControlPanel/class/vuc.php';
+require_once UC_path . 'System/loadmod.php';
 #注册插件
-RegisterPlugin("oauth2", "ActivePlugin_oauth2");
+RegisterPlugin("vuc", "ActivePlugin_VisitorUserCenter");
 
-function ActivePlugin_oauth2() {
-    Add_Filter_Plugin('Filter_Plugin_Zbp_MakeTemplatetags', 'oauth2_MakeTemplatetags');
-    //Add_Filter_Plugin('Filter_Plugin_Index_Begin', 'oauth2_ECHO');
+function ActivePlugin_VisitorUserCenter() {
+    Add_Filter_Plugin('Filter_Plugin_Html_Js_Add', 'vuc_Js_Add');
+    Add_Filter_Plugin('Filter_Plugin_Index_Begin', 'vuc_Index_Begin');
+    Add_Filter_Plugin('Filter_Plugin_Logs', 'vuc_Logs');
 }
 
-function oauth2_MakeTemplatetags() {
+function vuc_Js_Add() {
     global $zbp;
-    $zbp->header .= '<script type="text/javascript">' . file_get_contents(oauth2_path . "User/js/SiteCtrl.js") . '</script>' . "\r\n";
-    $zbp->header = '<style type="text/css">' . file_get_contents(oauth2_path . "User/css/bootstrap.min.css") . '</style>' . $zbp->header;
-    $zbp->header .= '<script type="text/javascript">' . file_get_contents(oauth2_path . "User/js/jquery.contextify.js") . '</script>' . "\r\n" ;
-    $zbp->footer.= <<<EOF
-    <script type="text/javascript">
-    //$("#divAll").attr("data-contextify-id","0");
-    window.onload=function(){
-        var options = {items:[
-		  {header: '功能'},
-		  {divider: true},
-		  {text: '第一个链接', href: 'http://www.jq22.com'},
-		  {text: '第二个链接', onclick: function() {alert("你点击了第2个链接")}},
-		  {text: '第三个链接', onclick: function() {alert("你点击了第3个链接")}},
-		  {text: '第四个链接', onclick: function() {alert("你点击了第4个链接")}}
-		]}
-		$('html').contextify(options);
+    $action = 'root';
+    if ($zbp->CheckRights($action)) {
+        echo file_get_contents(UC_path . "User/js/SiteCtrl.js") . "\r\n";
     }
-	</script>
-EOF;
 }
 
-function InstallPlugin_oauth2() {
-    global $zbp;
-    oauth2_CreatTable();
-    oauth2_init();
-    //配置初始化
-    $zbp->Config('oauth2')->normenu = '0';
-    $zbp->Config('oauth2')->noselect = '0';
-    $zbp->Config('oauth2')->nof5 = '0';
-    $zbp->Config('oauth2')->nof12 = '0';
-    $zbp->Config('oauth2')->noiframe = '1';
-    $zbp->Config('oauth2')->closesite = '0';
-    $zbp->Config('oauth2')->closetips = '网站正在维护，请稍后再访问';
+function vuc_Index_Begin() {
 
-    $zbp->Config('oauth2')->siteprocted = false;
-    $zbp->SaveConfig('oauth2');
 }
 
-function oauth2_CreatTable() {
+function vuc_Logs($log, $e) {
+    $vuc = new VUC();
+    $vuc->OutputLog('0', 'system_log' . ($e == true ? '' : '_err'), $log);
+}
+
+function ReNewSiteCtrlJSFile() {
+    $vuc=new VUC();
+    $SiteCtrljs = fopen("../../User/js/SiteCtrl.js", "w") or die("Unable to open file!");
+
+    if ($vuc->GetConfig('normenu'))
+        fwrite($SiteCtrljs, "
+document.oncontextmenu=function(e){
+    return false;
+};");
+    if ($vuc->GetConfig('noselect'))
+        fwrite($SiteCtrljs, '
+document.onselectstart=function(){
+	return false;
+};
+$("body").attr({style:"-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;user-select:none;"});');
+
+//-------------按键拦截------------
+    if ($vuc->GetConfig('nof5') || $vuc->GetConfig('nof12') || $vuc->GetConfig('nocs')) {
+        $js = "
+document.onkeydown = function(e){
+    if (";
+        if ($vuc->GetConfig('nof5'))
+            $js .= "e.keyCode == 116 ||(e.ctrlKey && e.keyCode==82)";
+        if ($vuc->GetConfig('nof12')) {
+            if ($vuc->GetConfig('nof5'))
+                $js .= "||";
+            $js .= "e.keyCode == 123 || (e.shiftKey && e.ctrlKey && (e.keyCode==73))";
+        }
+        if ($vuc->GetConfig('nocs')) {
+            if ($vuc->GetConfig('nof5') || $vuc->GetConfig('nof12'))
+                $js .= "||";
+            $js .= "e.ctrlKey && (e.keyCode==83)";
+        }
+        $js .= "){
+		e.preventDefault();  
+	}
+}";
+        fwrite($SiteCtrljs, $js);
+    }
+
+    if ($vuc->GetConfig('noiframe'))
+        fwrite($SiteCtrljs, "
+if (window.location !== window.top.location) {
+	window.top.location = window.location;
+}
+");
+    if ($vuc->GetConfig('closesite'))
+        fwrite($SiteCtrljs, '
+$("body").html("<div style=\"position:fixed;top:0;left:0;width:100%;height:100%;text-align:center;background:#fff;padding-top:150px;z-index:99999;\">' . $vuc->GetConfig('closetips') . '</div>");');
+
+    fclose($SiteCtrljs);
+}
+
+
+
+
+function InstallPlugin_VisitorUserCenter() {
+    vuc_CreatTable();
+    vuc_init();
+}
+
+function vuc_CreatTable() {
     global $zbp;
     //数据库检测与创建
     $s = '';
-    if (!$zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_user'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_user'], $GLOBALS['datainfo']['plugin_oauth2_user']) . ';';
+    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_user'])) {
+        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_user'], $GLOBALS['datainfo']['vuc_user']) . ';';
     }
-    if (!$zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_group'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_group'], $GLOBALS['datainfo']['plugin_oauth2_group']) . ';';
+    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_group'])) {
+        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_group'], $GLOBALS['datainfo']['vuc_group']) . ';';
 
     }
-    if (!$zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_history'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_history'], $GLOBALS['datainfo']['plugin_oauth2_history']) . ';';
+    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_history'])) {
+        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_history'], $GLOBALS['datainfo']['vuc_history']) . ';';
     }
-    if (!$zbp->db->ExistTable($GLOBALS['table']['plugin_oauth2_config'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['plugin_oauth2_config'], $GLOBALS['datainfo']['plugin_oauth2_config']) . ';';
+    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_config'])) {
+        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config']) . ';';
     }
     $zbp->db->QueryMulit($s);
 }
 
-function oauth2_init() {
-
+function vuc_init() {
+    $vuc = new VUC();
+    $vuc->SetConfig('normenu', '0');
+    $vuc->SetConfig('noselect', '0');
+    $vuc->SetConfig('nof5', '0');
+    $vuc->SetConfig('nof12', '0');
+    $vuc->SetConfig('noiframe', '1');
+    $vuc->SetConfig('closesite', '0');
+    $vuc->SetConfig('closetips', '网站正在维护，请稍后再访问');
+    $vuc->SetConfig('sitehost', $_SERVER['HTTP_HOST']);
+    $vuc->SetConfig('siteprocted', '0');
 }
 
-function UninstallPlugin_oauth2() {
+
+function UninstallPlugin_VisitorUserCenter() {
 }

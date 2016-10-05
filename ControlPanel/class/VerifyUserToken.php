@@ -23,28 +23,26 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {
     $GtSdk = new GeetestLib(CAPTCHA_ID, PRIVATE_KEY);
     $user_id = $_SESSION['user_id'];
     if ($_SESSION['gtserver'] == 1) {
-        $result = $GtSdk->success_validate($_POST['geetest_challenge'], $_POST['geetest_validate'], $_POST['geetest_seccode'], $user_id);
-        if ($result) {
-            if ($_POST["user"] == "admin") {
-                echo 'alert("Yes,admin");';
-            } else {
-                echo 'alert("Not Admin,' . $_POST["user"] . '1");';
-                phpinfo();
-            }
+        if ($GtSdk->success_validate($_POST['geetest_challenge'], $_POST['geetest_validate'], $_POST['geetest_seccode'], $user_id)) {
+            UserLogin();
         } else {
             echo 'alert("error!");';
-            phpinfo();
         }
     } else {
         if ($GtSdk->fail_validate($_POST['geetest_challenge'], $_POST['geetest_validate'], $_POST['geetest_seccode'])) {
-            if ($_POST["user"] == "admin") {
-                echo 'alert("Yes,admin");';
-            } else {
-                echo 'alert("Not Admin,' . $_POST["user"] . '2");';
-            }
+            UserLogin();
         } else {
             echo 'alert("error!");';
         }
     }
 }
+
+function UserLogin() {
+    if ($_POST["user"] == "admin") {
+        echo 'alert("Yes,admin");';
+    } else {
+        echo 'alert("Not Admin,' . $_POST["user"] . '2");';
+    }
+}
+
 ?>

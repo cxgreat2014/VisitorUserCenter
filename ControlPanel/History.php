@@ -1,6 +1,7 @@
 <?php
-require '../../../zb_system/function/c_system_base.php';
-require '../../../zb_system/function/c_system_admin.php';
+$blogpath = str_replace($_SERVER['PHP_SELF'], "", $_SERVER['SCRIPT_FILENAME']);
+require $blogpath.'/zb_system/function/c_system_base.php';
+require $blogpath.'/zb_system/function/c_system_admin.php';
 $zbp->Load();
 $action = 'root';
 if (!$zbp->CheckRights($action)) {
@@ -11,7 +12,7 @@ if (!$zbp->CheckPlugin('oauth2')) {
     $zbp->ShowError(48);
     die();
 }
-require './class/oauth2.php';
+require './class/vuc.php';
 $oauth2 = new Oauth2();
 $blogtitle = 'oauth2 - 记录查询';
 require $blogpath . 'zb_system/admin/admin_header.php';
