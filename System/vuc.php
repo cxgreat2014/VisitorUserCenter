@@ -1,8 +1,24 @@
 <?php
-require_once site_path.'zb_system/function/c_system_base.php';
+if (!defined('UC_path')) {
+    define('UC_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "\\1", str_replace('\\', '/', __FILE__)) . "/");
+    define('site_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "", str_replace('\\', '/', __FILE__)) . "/");
+}
+require_once site_path . 'zb_system/function/c_system_base.php';
 $zbp->Load();
 
 class VUC {
+    private $pkey;
+    private $cert;
+
+    public function __construct() {
+        if (!empty($this->GetConfig('install'))) {
+            $priv_key = file_get_contents($this->GetConfig('pfxpath')); //获取密钥文件内容
+            openssl_pkcs12_read($priv_key, $certs, $this->GetConfig('privkeypass')); //读取公钥、私钥
+            $this->pkey = $certs['pkey']; //私钥
+            $this->cert = $certs['cert'];
+        }
+    }
+
     //user
     function CreatUser($DataArr) {
         global $zbp;
@@ -143,5 +159,39 @@ class VUC {
         $sql = $zbp->db->sql->Select($GLOBALS['table']['vuc_config'], 'value', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config'], $sql);
         return $array[0]->value;
+    }
+
+    //Enc & Dec
+    function PrivateDecrypt($data) {
+        $decrypted = '';
+        openssl_private_decrypt(base64_decode($data), $decrypted, $this->pkey);
+        return $decrypted;
+    }
+
+    function PrivateEncrypt($data) {
+        $encrypted = '';
+        openssl_private_encrypt($data, $encrypted, $this->pkey);
+        return base64_encode($encrypted);
+    }
+
+    function PublicDecrypt($data) {
+        $decrypted = '';
+        openssl_public_decrypt(base64_decode($data), $decrypted, $this->cert);
+        return $decrypted;
+    }
+
+    function PublicEncrypt($data) {
+        $encrypted = '';
+        openssl_public_encrypt($data, $encrypted, $this->cert);
+        return base64_encode($encrypted);
+    }
+
+    function GenStr($length = 16) {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $password = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $chars[mt_rand(0, strlen($chars) - 1)];
+        }
+        return $password;
     }
 }

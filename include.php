@@ -4,7 +4,7 @@ if (!defined('UC_path')) {
     define('site_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "", str_replace('\\', '/', __FILE__)) . "/");
 }
 require_once UC_path . 'System/dbconfig.php';
-require_once UC_path . 'ControlPanel/class/vuc.php';
+require_once UC_path . 'System/vuc.php';
 require_once UC_path . 'System/loadmod.php';
 #注册插件
 RegisterPlugin("vuc", "ActivePlugin_VisitorUserCenter");
@@ -90,17 +90,7 @@ $("body").html("<div style=\"position:fixed;top:0;left:0;width:100%;height:100%;
     fclose($SiteCtrljs);
 }
 
-function vuc_genstr($length = 16)
-{
-// 密码字符集，可任意添加你需要的字符
-    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    $password = '';
-    for ($i = 0; $i < $length; $i++) {
 
-        $password .= $chars[mt_rand(0, strlen($chars) - 1)];
-    }
-    return $password;
-}
 
 
 function InstallPlugin_VisitorUserCenter()
@@ -133,7 +123,9 @@ function InstallPlugin_VisitorUserCenter()
     $vuc->SetConfig('closetips', '网站正在维护，请稍后再访问');
     $vuc->SetConfig('sitehost', $_SERVER['HTTP_HOST']);
     $vuc->SetConfig('siteprocted', '0');
-    //创建加密证书实行加密通讯
+
+
+    //创建数字证书实行加密通讯
     $dn = array(
         "countryName" => "CN",
         "stateOrProvinceName" => "Beijing",
@@ -144,28 +136,24 @@ function InstallPlugin_VisitorUserCenter()
         "emailAddress" => "user@domain.com"
     );
 
-    $privkeypass = 'cxg2014.bit'; //私钥密码
+    $privkeypass = $vuc->GenStr(8); //私钥密码
     $numberofdays = 365;     //有效时长
-    $ckfn = vuc_genstr();
-    $cerpath = $ckfn.".cer"; //生成证书路径
-    $pfxpath = $ckfn.".pfx"; //密钥文件路径
-    $vuc->SetConfig('RSA', $ckfn);
+    $ckfn = $vuc->GenStr();
+    $pfxpath = UC_path.'System/'.$ckfn.".pfx"; //密钥文件路径
+    $vuc->SetConfig('pfxpath', $ckfn);
+    $vuc->SetConfig('privkeypass', $privkeypass);
 
 
     //生成证书
     $privkey = openssl_pkey_new();
     $csr = openssl_csr_new($dn, $privkey);
     $sscert = openssl_csr_sign($csr, null, $privkey, $numberofdays);
-    openssl_x509_export($sscert, $csrkey); //导出证书$csrkey
     openssl_pkcs12_export($sscert, $privatekey, $privkey, $privkeypass); //导出密钥$privatekey
-    //生成证书文件
-    $fp = fopen($cerpath, "w");
-    fwrite($fp, $csrkey);
-    fclose($fp);
     //生成密钥文件
     $fp = fopen($pfxpath, "w");
     fwrite($fp, $privatekey);
     fclose($fp);
+    $vuc->SetConfig('install', '1');
 }
 
 

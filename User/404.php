@@ -1,4 +1,5 @@
 <?php
+global $vuc;
 echo '<!DOCTYPE html>
 <html>
 <head>
