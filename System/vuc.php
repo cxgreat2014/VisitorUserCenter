@@ -7,16 +7,47 @@ require_once site_path . 'zb_system/function/c_system_base.php';
 $zbp->Load();
 
 class VUC {
-    private $pkey;
-    private $cert;
+    private $version = 27;
 
-    public function __construct() {
-        if (!empty($this->GetConfig('install'))) {
-            $priv_key = file_get_contents($this->GetConfig('pfxpath')); //获取密钥文件内容
-            openssl_pkcs12_read($priv_key, $certs, $this->GetConfig('privkeypass')); //读取公钥、私钥
-            $this->pkey = $certs['pkey']; //私钥
-            $this->cert = $certs['cert'];
+    function __construct() {
+        global $zbp;
+        if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_user']) || !$zbp->db->ExistTable($GLOBALS['table']['vuc_group'])
+            || !$zbp->db->ExistTable($GLOBALS['table']['vuc_history'])||!$zbp->db->ExistTable($GLOBALS['table']['vuc_config'])) {
+            $this->init();
         }
+    }
+
+    private function init() {
+        global $zbp;
+        //数据库检测与创建
+        $s = '';
+        if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_user'])) {
+            $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_user'], $GLOBALS['datainfo']['vuc_user']) . ';';
+        }
+        if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_group'])) {
+            $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_group'], $GLOBALS['datainfo']['vuc_group']) . ';';
+
+        }
+        if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_history'])) {
+            $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_history'], $GLOBALS['datainfo']['vuc_history']) . ';';
+        }
+        if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_config'])) {
+            $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config']) . ';';
+        }
+        $zbp->db->QueryMulit($s);
+        //初始化
+        $vuc = new VUC();
+        $vuc->SetConfig('normenu', false);
+        $vuc->SetConfig('noselect', false);
+        $vuc->SetConfig('nof5', false);
+        $vuc->SetConfig('nof12', false);
+        $vuc->SetConfig('noiframe', true);
+        $vuc->SetConfig('closesite', false);
+        $vuc->SetConfig('closetips', '网站正在维护，请稍后再访问');
+        $vuc->SetConfig('sitehost', $_SERVER['HTTP_HOST']);
+        $vuc->SetConfig('siteprocted', false);
+
+        $vuc->SetConfig('version', $this->version);
     }
 
     //user
@@ -142,7 +173,7 @@ class VUC {
     function SetConfig($key, $value, $ext = null) {
         global $zbp;
         $where = array(array('=', 'key', $key));
-        $DataArr = array('key' => $key, 'value' => $value);
+        $DataArr = array('key' => $key, 'value' => json_encode(array($key => $value)));
         if (!empty($ext)) $DataArr['ext'] = $ext;
         $sql = $zbp->db->sql->Select($GLOBALS['table']['vuc_config'], 'id', $where, null, null, null);
         $array = $zbp->GetListCustom($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config'], $sql);
@@ -158,40 +189,90 @@ class VUC {
         $where = array(array('=', 'key', $key));
         $sql = $zbp->db->sql->Select($GLOBALS['table']['vuc_config'], 'value', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config'], $sql);
-        return $array[0]->value;
+        if (empty($array)) return null;
+        return json_decode($array[0]->value)->value;
+    }
+}
+
+class Enc_Dec {
+    private $pkey;
+    private $cert;
+
+    public function __construct() {
+        $vuc = new VUC();
+        if (empty($vuc->GetConfig('pfxpath')) || is_file($vuc->GetConfig('pfxpath'))) $this->GenCert();
+        $priv_key = '';
+        $priv_key = file_get_contents($vuc->GetConfig('pfxpath')); //获取密钥文件内容
+        openssl_pkcs12_read($priv_key, $certs, $vuc->GetConfig('privkeypass')); //读取公钥、私钥
+        $this->pkey = $certs['pkey']; //私钥
+        $this->cert = $certs['cert'];
+
     }
 
     //Enc & Dec
-    function PrivateDecrypt($data) {
+    public function PrivateDecrypt($data) {
         $decrypted = '';
         openssl_private_decrypt(base64_decode($data), $decrypted, $this->pkey);
         return $decrypted;
     }
 
-    function PrivateEncrypt($data) {
+    public function PrivateEncrypt($data) {
         $encrypted = '';
         openssl_private_encrypt($data, $encrypted, $this->pkey);
         return base64_encode($encrypted);
     }
 
-    function PublicDecrypt($data) {
+    public function PublicDecrypt($data) {
         $decrypted = '';
         openssl_public_decrypt(base64_decode($data), $decrypted, $this->cert);
         return $decrypted;
     }
 
-    function PublicEncrypt($data) {
+    public function PublicEncrypt($data) {
         $encrypted = '';
         openssl_public_encrypt($data, $encrypted, $this->cert);
         return base64_encode($encrypted);
     }
 
-    function GenStr($length = 16) {
+    public function GenStr($length = 16) {
         $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $password = '';
         for ($i = 0; $i < $length; $i++) {
             $password .= $chars[mt_rand(0, strlen($chars) - 1)];
         }
         return $password;
+    }
+
+    private function GenCert() {
+        $vuc = new VUC();
+        if (!empty($vuc->GetConfig('pfxpath')) && is_file($vuc->GetConfig('pfxpath'))) return;
+        //创建数字证书实行加密通讯
+        $dn = array(
+            "countryName" => "CN",
+            "stateOrProvinceName" => "Beijing",
+            "localityName" => "Beijing",
+            "organizationName" => "MySelf",
+            "organizationalUnitName" => "Whatever",
+            "commonName" => "mySelf",
+            "emailAddress" => "user@domain.com"
+        );
+
+        $privkeypass = $this->GenStr(8); //私钥密码
+        $numberofdays = 36502;     //有效时长
+        $ckfn = $this->GenStr();
+        $pfxpath = UC_path . 'System/' . $ckfn . ".pfx"; //密钥文件路径
+        $vuc->SetConfig('pfxpath', $pfxpath);
+        $vuc->SetConfig('privkeypass', $privkeypass);
+
+
+        //生成证书
+        $privkey = openssl_pkey_new();
+        $csr = openssl_csr_new($dn, $privkey);
+        $sscert = openssl_csr_sign($csr, null, $privkey, $numberofdays);
+        openssl_pkcs12_export($sscert, $privatekey, $privkey, $privkeypass); //导出密钥$privatekey
+        //生成密钥文件
+        $fp = fopen($pfxpath, "w");
+        fwrite($fp, $privatekey);
+        fclose($fp);
     }
 }

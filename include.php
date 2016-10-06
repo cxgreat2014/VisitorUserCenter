@@ -96,64 +96,7 @@ $("body").html("<div style=\"position:fixed;top:0;left:0;width:100%;height:100%;
 function InstallPlugin_VisitorUserCenter()
 {
     global $zbp;
-    //数据库检测与创建
-    $s = '';
-    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_user'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_user'], $GLOBALS['datainfo']['vuc_user']) . ';';
-    }
-    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_group'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_group'], $GLOBALS['datainfo']['vuc_group']) . ';';
 
-    }
-    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_history'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_history'], $GLOBALS['datainfo']['vuc_history']) . ';';
-    }
-    if (!$zbp->db->ExistTable($GLOBALS['table']['vuc_config'])) {
-        $s .= $zbp->db->sql->CreateTable($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config']) . ';';
-    }
-    $zbp->db->QueryMulit($s);
-    //初始化
-    $vuc = new VUC();
-    $vuc->SetConfig('normenu', '0');
-    $vuc->SetConfig('noselect', '0');
-    $vuc->SetConfig('nof5', '0');
-    $vuc->SetConfig('nof12', '0');
-    $vuc->SetConfig('noiframe', '1');
-    $vuc->SetConfig('closesite', '0');
-    $vuc->SetConfig('closetips', '网站正在维护，请稍后再访问');
-    $vuc->SetConfig('sitehost', $_SERVER['HTTP_HOST']);
-    $vuc->SetConfig('siteprocted', '0');
-
-
-    //创建数字证书实行加密通讯
-    $dn = array(
-        "countryName" => "CN",
-        "stateOrProvinceName" => "Beijing",
-        "localityName" => "Beijing",
-        "organizationName" => "MySelf",
-        "organizationalUnitName" => "Whatever",
-        "commonName" => "mySelf",
-        "emailAddress" => "user@domain.com"
-    );
-
-    $privkeypass = $vuc->GenStr(8); //私钥密码
-    $numberofdays = 365;     //有效时长
-    $ckfn = $vuc->GenStr();
-    $pfxpath = UC_path.'System/'.$ckfn.".pfx"; //密钥文件路径
-    $vuc->SetConfig('pfxpath', $ckfn);
-    $vuc->SetConfig('privkeypass', $privkeypass);
-
-
-    //生成证书
-    $privkey = openssl_pkey_new();
-    $csr = openssl_csr_new($dn, $privkey);
-    $sscert = openssl_csr_sign($csr, null, $privkey, $numberofdays);
-    openssl_pkcs12_export($sscert, $privatekey, $privkey, $privkeypass); //导出密钥$privatekey
-    //生成密钥文件
-    $fp = fopen($pfxpath, "w");
-    fwrite($fp, $privatekey);
-    fclose($fp);
-    $vuc->SetConfig('install', '1');
 }
 
 

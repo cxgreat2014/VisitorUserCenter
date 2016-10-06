@@ -69,7 +69,7 @@ require site_path . 'zb_system/admin/admin_top.php';
                         <td align="right" height="30"><b>禁用右键：</b></td>
                         <td><span class="sel"><input name="normenu" id="normenu" class="checkbox" type="text"
                                                      value="<?php echo $vuc->GetConfig('normenu'); ?>"/></span><span
-                                style="color:#888;margin-left:20px;font-size:12px;">禁用鼠标右键菜单复制</span></td>
+                                style="color:#888;margin-left:20px;font-size:12px;">禁用网页鼠标右键菜单</span></td>
                     </tr>
                     <tr>
                         <td align="right" height="30"><b>禁止选择：</b></td>

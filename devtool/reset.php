@@ -6,11 +6,11 @@ $action = 'root';
 if (!$zbp->CheckRights($action)) {
     $zbp->ShowError(6);
     die();
-}
+}/*
 if (!$zbp->CheckPlugin('oauth2')) {
     $zbp->ShowError(48);
     die();
-}
+}*/
 
 if ($_GET['reset'] == "true") {
     oauth2_Reset();
@@ -30,23 +30,8 @@ function oauth2_Reset() {
     if ($zbp->db->ExistTable($history_table)) {
         $sql .= $zbp->db->sql->DelTable($history_table) . ";";
     }
-    $sql.=$zbp->db->sql->CreateTable($group_table, $GLOBALS['datainfo']['plugin_oauth2_group']).";";
-    $sql.=$zbp->db->sql->CreateTable($user_table, $GLOBALS['datainfo']['plugin_oauth2_user']).";";
-    $sql.=$zbp->db->sql->CreateTable($history_table, $GLOBALS['datainfo']['plugin_oauth2_history']).";";
-    $zbp->db->QueryMulit($sql);
-
-    //配置初始化
-    $zbp->Config('oauth2')->normenu = '0';
-    $zbp->Config('oauth2')->noselect = '0';
-    $zbp->Config('oauth2')->nof5 = '0';
-    $zbp->Config('oauth2')->nof12 = '0';
-    $zbp->Config('oauth2')->noiframe = '1';
-    $zbp->Config('oauth2')->closesite = '0';
-    $zbp->Config('oauth2')->closetips = '网站正在维护，请稍后再访问';
-
-    $zbp->Config('oauth2')->siteprocted = false;
-    $zbp->SaveConfig('oauth2');
-    echo "<p>Reset Finished</p><script>window.setTimeout(\"window.location='../main.php'\",2000); </script>";
+    $vuc=new VUC();
+    echo '<p>Reset Finished</p><p>Plugin version:'.$vuc->GetConfig('version').'</p>';//<script>window.setTimeout(\"window.location='../main.php'\",2000); </script>";
     die();
 } ?>
 
