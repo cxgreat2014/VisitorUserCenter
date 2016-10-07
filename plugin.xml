@@ -5,7 +5,7 @@
 <url>dev.cxg2014.bit</url>
 <note>实现访问控制</note>
 <description></description>
-<path>ControlPanel/main.php</path>
+<path>ControlPanel/User.php</path>
 <include>include.php</include>
 <level>1</level>
 <author>
@@ -21,7 +21,7 @@
 <adapted>150101</adapted>
 <version>1.0</version>
 <pubdate>2016-06-12</pubdate>
-<modified>2016-10-02</modified>
+<modified>2016-10-06</modified>
 <price>1000</price>
 <advanced>
   <dependency></dependency>

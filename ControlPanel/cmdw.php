@@ -1,19 +1,22 @@
 <?php
-require '../../../../zb_system/function/c_system_base.php';
-require '../../../../zb_system/function/c_system_admin.php';
-require './class/vuc.php';
-require './class/JsonReply.php';
+define('UC_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "\\1", str_replace('\\', '/', __FILE__)));
+define('site_path', preg_replace("/(\/zb_users\/plugin\/VisitorUserCenter\/).*/is", "", str_replace('\\', '/', __FILE__)) . "/");
+require site_path.'zb_system/function/c_system_base.php';
+require site_path.'zb_system/function/c_system_admin.php';
+require_once UC_path . 'System/vuc.php';
+require UC_path . 'System/JsonReply.php';
 $zbp->Load();
 $action = 'root';
 if (!$zbp->CheckRights($action)) {
     $zbp->ShowError(6);
     die();
 }
-if (!$zbp->CheckPlugin('oauth2')) {
+if (!$zbp->CheckPlugin('VisitorUserCenter')) {
     $zbp->ShowError(48);
     die();
 }
-$oauth2 = new Oauth2();
+$vuc = new VUC();
+$enc_dec=new Enc_Dec();
 function CheckParamIsSet() {
     $args = func_get_args();
     for ($i = 0; $i < count($args); $i++) {
@@ -46,11 +49,11 @@ switch ($_POST['action']) {
         $jrp->ChangeStatus(false);
         if (strlen($name) > 32) {
             $jrp->SetVtip("uname", "用户名最长32个字符，请重新输入");
-        } elseif (!$oauth2->CheckUserName($name)) {
+        } elseif (!$vuc->CheckUserName($name)) {
             $jrp->SetVtip("uname", '用户：' . $name . " 已存在，请重新输入");
         } elseif (strlen($invcode) != 6) {
             $jrp->SetVtip("invcode", '邀请码长度必须为6，请重新输入或生成');
-        } elseif (!$oauth2->CheckInvcode($invcode)) {
+        } elseif (!$vuc->CheckInvcode($invcode)) {
             $jrp->SetVtip("invcode", '邀请码：' . $invcode . ' 已存在，请重新输入或生成');
         }
         $array = new stdClass();
@@ -77,8 +80,8 @@ switch ($_POST['action']) {
             'invcode' => $invcode,
             'status' => $status
         );
-        $oauth2->CreatUser($DataArr);
-        $array = $oauth2->GetUserByName($name);
+        $vuc->CreatUser($DataArr);
+        $array = $vuc->GetUserByName($name);
         if (empty($array)) {
             $jrp->SetAlert("在创建用户：$name 时 发生未知错误", "Can't find $name in database");
         } else {
@@ -101,13 +104,13 @@ switch ($_POST['action']) {
         if (strlen($name) > 32) {
             $jrp->SetVtip("uname", "用户名最长32个字符，请重新输入");
         }
-        $array = $oauth2->GetUserByName($name);
+        $array = $vuc->GetUserByName($name);
         if (count($array) > 0 && $array[0]->uid != $uid) {
             $jrp->SetVtip("uname", '用户：' . $name . " 已存在，请重新输入");
         } elseif (strlen($invcode) != 6) {
             $jrp->SetVtip("invcode", '邀请码长度必须为6，请重新输入或生成');
         }
-        $array = $oauth2->GetUserByInvcode($invcode);
+        $array = $vuc->GetUserByInvcode($invcode);
         if (count($array) > 0 && $array[0]->uid != $uid) {
             $jrp->SetVtip("invcode", '邀请码：' . $invcode . ' 已存在，请重新输入或生成');
         }
@@ -135,8 +138,8 @@ switch ($_POST['action']) {
             'invcode' => $invcode,
             'status' => $status
         );
-        $oauth2->UpdateUser($uid, $DataArr);
-        if ($oauth2->CheckUserName($name)) {
+        $vuc->UpdateUser($uid, $DataArr);
+        if ($vuc->CheckUserName($name)) {
             $jrp->ChangeStatus(false);
             $jrp->SetAlert("ERROR!\r\n在更新数据过程中发生致命错误!", "Can't find $name in Database");
         } else {
@@ -147,20 +150,20 @@ switch ($_POST['action']) {
         break;
     case "CheckInvcode":
         CheckParamIsSet("invcode");
-        $jrp->ChangeStatus($oauth2->CheckInvcode($_POST['invcode']));
+        $jrp->ChangeStatus($vuc->CheckInvcode($_POST['invcode']));
         $jrp->SendJsonWithDie();
         break;
     case "DelUser":
         CheckParamIsSet("uid");
-        $oauth2->ChangeUserStatus($_POST["uid"], "已删除", "该用户已删除");
+        $vuc->ChangeUserStatus($_POST["uid"], "已删除", "该用户已删除");
         break;
     case 'RecUser':
         CheckParamIsSet("uid");
-        $oauth2->ChangeUserStatus($_POST["uid"], "正常", "该用户已恢复");
+        $vuc->ChangeUserStatus($_POST["uid"], "正常", "该用户已恢复");
         break;
     case "DenUser":
         CheckParamIsSet("uid");
-        $oauth2->ChangeUserStatus($_POST["uid"], "禁止访问", "该用户已禁止访问");
+        $vuc->ChangeUserStatus($_POST["uid"], "禁止访问", "该用户已禁止访问");
         break;
     //群组操作类
     case "NewGroup":
@@ -213,7 +216,7 @@ EOF;
         break;
     case "UpdateGroup":
         CheckParamIsSet("gid", "gname", "gtemplate", "gspy");
-        $array = $oauth2->GetGroupByName($_POST['gname']);
+        $array = $vuc->GetGroupByName($_POST['gname']);
         if (count($array) > 0 && $array[0]->gid != $_POST['gid']) {
             $jrp->ChangeStatus(false);
             $jrp->SetVtip("gname", "该用户组名已存在");
@@ -243,14 +246,14 @@ EOF;
             'oauth' => json_encode($data),
             'status' => "正常"
         );
-        $oauth2->UpdateGroupInfo($_POST['gid'], $DataArr);
+        $vuc->UpdateGroupInfo($_POST['gid'], $DataArr);
         $jrp->ChangeStatus(true);
         $jrp->SetHint("good", "修改已保存");
         $jrp->SendJsonWithDie();
         break;
     case "CreatGroup":
         CheckParamIsSet("gname", "gtemplate", "gspy");
-        $array = $oauth2->GetGroupByName($_POST['gname']);
+        $array = $vuc->GetGroupByName($_POST['gname']);
         if (!empty($array)) {
             $jrp->ChangeStatus(false);
             $jrp->SetVtip("gname", "该群组名称已存在");
@@ -280,8 +283,8 @@ EOF;
             'oauth' => json_encode($data),
             'status' => "正常"
         );
-        $oauth2->CreatGroup($DataArr);
-        $array = $oauth2->GetGroupByName($_POST['gname']);
+        $vuc->CreatGroup($DataArr);
+        $array = $vuc->GetGroupByName($_POST['gname']);
         $jrp->ChangeStatus(!empty($array));
         $jrp->SetHint("good", "用户组 " . $_POST['gname'] . "已创建");
         $jrp->json['gid'] = $array[0]->gid;
@@ -290,7 +293,7 @@ EOF;
     case "DelGroup":
         CheckParamIsSet("gid");
         $array = array('status' => "已删除");
-        $oauth2->UpdateGroupInfo($_POST['gid'], $array);
+        $vuc->UpdateGroupInfo($_POST['gid'], $array);
         $jrp->ChangeStatus(true);
         $jrp->SetHint("good", "用户组已删除");
         $jrp->SendJsonWithDie();

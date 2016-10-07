@@ -78,7 +78,8 @@ class VUC {
             throw new Exception("No Status Set!", 1);
         }
         global $jrp;
-        $this->UpdateUser($uid, array('status' => $Status));
+        $enc_dec=new Enc_Dec();
+        $this->UpdateUser($uid, array('name'=>$enc_dec->GenStr(1).$this->GetUserByUid($uid)->name.$enc_dec->GenStr(1),'status' => $Status));
         $jrp->ChangeStatus(true);
         $jrp->SetHint("good", $Notice);
         $jrp->SendJsonWithDie();
@@ -102,7 +103,9 @@ class VUC {
     }
 
     function GetUserByUid($uid) {
-        return $this->GetUserList('uid', $uid);
+        $result=$this->GetUserList('uid', $uid);
+        if(empty($result))return null;
+        return $result[0];
     }
 
     function GetUserLastLogin($uid) {
@@ -189,7 +192,7 @@ class VUC {
         $where = array(array('=', 'key', $key));
         $sql = $zbp->db->sql->Select($GLOBALS['table']['vuc_config'], 'value', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config'], $sql);
-        if (empty($array)) return null;
+        if (empty($array)) return '';
         return json_decode($array[0]->value)->value;
     }
 }
@@ -200,7 +203,7 @@ class Enc_Dec {
 
     public function __construct() {
         $vuc = new VUC();
-        if (empty($vuc->GetConfig('pfxpath')) || is_file($vuc->GetConfig('pfxpath'))) $this->GenCert();
+        if (!is_file($vuc->GetConfig('pfxpath'))) $this->GenCert();
         $priv_key = '';
         $priv_key = file_get_contents($vuc->GetConfig('pfxpath')); //获取密钥文件内容
         openssl_pkcs12_read($priv_key, $certs, $vuc->GetConfig('privkeypass')); //读取公钥、私钥

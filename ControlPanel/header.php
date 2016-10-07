@@ -71,4 +71,5 @@ echo '
         margin: 3px 3px 3px 7px;
     }
 </style>
+<div id="divMain">
 ';

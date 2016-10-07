@@ -13,13 +13,14 @@ if (!$zbp->CheckPlugin('oauth2')) {
 }*/
 
 if ($_GET['reset'] == "true") {
-    oauth2_Reset();
+    vuc_Reset();
 }
-function oauth2_Reset() {
+function vuc_Reset() {
     global $zbp;
-    $user_table = $GLOBALS['table']['plugin_oauth2_user'];
-    $group_table = $GLOBALS['table']['plugin_oauth2_group'];
-    $history_table = $GLOBALS['table']['plugin_oauth2_history'];
+    $user_table = $GLOBALS['table']['vuc_user'];
+    $group_table = $GLOBALS['table']['vuc_group'];
+    $history_table = $GLOBALS['table']['vuc_history'];
+    $config_table=$GLOBALS['table']['vuc_config'];
     $sql = "";
     if ($zbp->db->ExistTable($user_table)) {
         $sql .= $zbp->db->sql->DelTable($user_table) . ";";
@@ -30,6 +31,10 @@ function oauth2_Reset() {
     if ($zbp->db->ExistTable($history_table)) {
         $sql .= $zbp->db->sql->DelTable($history_table) . ";";
     }
+    if ($zbp->db->ExistTable($config_table)) {
+        $sql .= $zbp->db->sql->DelTable($config_table) . ";";
+    }
+    $zbp->db->QueryMulit($sql);
     $vuc=new VUC();
     echo '<p>Reset Finished</p><p>Plugin version:'.$vuc->GetConfig('version').'</p>';//<script>window.setTimeout(\"window.location='../main.php'\",2000); </script>";
     die();

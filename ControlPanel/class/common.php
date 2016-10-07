@@ -1,4 +1,4 @@
-<?php
+<?php/*
 require_once '../../../../../zb_system/function/c_system_base.php';
 require_once 'vuc.php';
 $zbp->Load();
@@ -14,7 +14,7 @@ if ($zbp->Config('oauth2')->siteprocted && $reference['host'] != $sitehost) {
     die();
 } else {
     if ($_SERVER['REQUEST_METHOD'] == "GET") {
-        echo "/*! jQuery v1.9.0 | (c) 2005, 2012 jQuery Foundation, Inc. | jquery.org/license */\n";
+        echo "/*! jQuery v1.9.0 | (c) 2005, 2012 jQuery Foundation, Inc. | jquery.org/license *//*\n";
         //echo file_get_contents("../js/ip.js");
     } elseif ($_SERVER['REQUEST_METHOD'] == "POST") {
         $vuc->OutputLog('','','');
@@ -23,5 +23,5 @@ if ($zbp->Config('oauth2')->siteprocted && $reference['host'] != $sitehost) {
         //echo 'alert("'.$_POST["method"].":".$_POST["ip"].'");';
         //echo "return;";
     }
-}
+}*/
 ?>
