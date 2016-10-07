@@ -173,11 +173,10 @@ class VUC {
     }
 
     //config
-    function SetConfig($key, $value, $ext = null) {
+    function SetConfig($key, $value) {
         global $zbp;
         $where = array(array('=', 'key', $key));
-        $DataArr = array('key' => $key, 'value' => json_encode(array($key => $value)));
-        if (!empty($ext)) $DataArr['ext'] = $ext;
+        $DataArr = array('key' => $key, 'value' => json_encode(array('value' => $value)));
         $sql = $zbp->db->sql->Select($GLOBALS['table']['vuc_config'], 'id', $where, null, null, null);
         $array = $zbp->GetListCustom($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config'], $sql);
         if (empty($array)) {
@@ -192,8 +191,9 @@ class VUC {
         $where = array(array('=', 'key', $key));
         $sql = $zbp->db->sql->Select($GLOBALS['table']['vuc_config'], 'value', $where);
         $array = $zbp->GetListCustom($GLOBALS['table']['vuc_config'], $GLOBALS['datainfo']['vuc_config'], $sql);
-        if (empty($array)) return '';
-        return json_decode($array[0]->value)->value;
+        $array=json_decode($array[0]->value);
+        //if (empty($array)) return '';
+        return $array->value;
     }
 }
 
