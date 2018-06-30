@@ -1,11 +1,17 @@
 # VisitorUserCenter
+
 一个正在实验的项目
+
 ##命名缘由:
+
 最初是想命名为UserCenter或者VisitorCenter的,但是因为涉及到短码规范(单词首字母)若是使用UC或者VC
 都会造成php解释器解释问题,而且本插件不单单面向用户或者访客,且UC已经和好几款软件重名了,因此最终
 选择了一个十分Chinglish的English-like词汇VisitorUserCenter(VUC)
+
 ##Changelog
+
 ####欲知更多更多详情,请见[commits](https://github.com/cxgreat2014/VisitorUserCenter/commits/master)
+
 * 2016/10/2 11:27 重大更新,项目重命名为VisitorUserCenter
 * 2016/9/14 23:17 全局重构,使用REST API模式开发,加入json响应处理类,大幅精简并规范化代码
 * 2016/9/14 14:41 修复BUG,完成用户管理页面,集中化数据库操作
